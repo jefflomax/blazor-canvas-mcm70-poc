@@ -1,0 +1,271 @@
+﻿@page "/mcmpoc"
+@using Blazor.Extensions
+@using Blazor.Extensions.Canvas.Canvas2D;
+@using Blazor.Extensions.Canvas.Model;
+@using Blazor.Extensions.Canvas.WebGL
+@using Microsoft.Extensions.Logging
+@using System.Runtime.InteropServices
+@using BlazorCanvas.Runner
+@using BlazorCanvas.JsInterop
+@inject HttpClient Http
+@inject ILogger<McmPOC> Logger
+@*  @inject ILoggerFactory LoggerFactory *@
+
+@* Hidden image tag drawn to canvas after load *@
+<img
+	id="mcm"
+	src="images/mcm70.png"
+	style="display:none;"
+	title="MCM/70"
+	@onload="DrawImageToCanvas"
+	@ref="_imgRef"/>
+
+@* Need updated Canvas that support retrieving id or *@
+@* Possibly drop canvas extension completely *@
+@* BECanvas doesn't have onclick, add in JS *@
+<BECanvas
+	Width="@EmulatorWidth"
+	Height="@EmulatorHeight"
+ 	@ref="_canvasReference"></BECanvas>
+
+<div @ref="_divRef">@someText</div>
+<div>@onInit</div>
+<button
+	id="startit"
+	type="button"
+	title="Start"
+	@onclick="StartGame">Start Gameloop</button>
+<button
+	id="doit"
+	type="button"
+	name="thebutton"
+	title="Click"
+	@onclick="TrySomething">Update Display</button>
+
+@code {
+	private Canvas2DContext _context2d = null;
+	protected ElementReference _divRef;
+	protected ElementReference _imgRef;
+	private string someText = "";
+	private string onInit = "";
+	private const int EmulatorWidth = 932; // emulator window's width
+	private const int EmulatorHeight = 722;
+	private bool imagesReady = false;
+
+
+	// WASM JS interop
+	// https://developer.mozilla.org/en-US/docs/WebAssembly/Using_the_JavaScript_API
+
+	// This can be cast to
+	// IJSInProcessRuntime (Client Side Only)
+	// IJSUnmarshalledRuntime (Client Side Only, JS must handle parm conversion)
+	[Inject]
+	protected IJSRuntime iJsRuntime { get; set; }
+
+	protected BECanvasComponent _canvasReference;
+	// https://github.com/BlazorExtensions/Canvas
+	// https://github.com/BlazorExtensions/Canvas/blob/master/test/Blazor.Extensions.Canvas.Test.ClientSide/Pages/WebGLComponent.cs
+
+	public byte[] Panel { get; set; }
+	private Game _game = null;
+
+	[JSInvokable]
+	public async ValueTask GameLoop(double time)
+	{
+		// int component is ms since page load
+		// decimals are microseconds
+		Console.WriteLine($".NET GameLoop {time}");
+		if (null == _game)
+			return;
+		await _game.Step();
+
+		//_inputService ??= _game.GetService<InputService>();
+	}
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		onInit = "OnInitializedAsync Start";
+
+		_game = new Game();
+
+#if false
+		// This works, but of course the array is in mono not JS
+		Panel = await Http.GetByteArrayAsync("images/panel.data");
+		if( Panel.Length > 0)
+		{
+			someText = $"{Panel[0]} {Panel[1]}";
+		}
+#endif
+		onInit = "OnInitializedAsync End";
+		await Task.CompletedTask;
+	}
+
+#if false
+	// Current Blazor likely does not need
+	[StructLayout(LayoutKind.Explicit)]
+	public struct InteropStruct
+	{
+		[FieldOffset(0)]
+		public string CanvasId;
+	}
+#endif
+
+	private void CanvasOnClick(MouseEventArgs me)
+	{
+		// This will be needed for printer, cassette click etc
+		Console.WriteLine($"Click {me.ClientX} {me.ClientY}");
+	}
+
+	private async Task StartGame()
+	{
+		Console.WriteLine(".NET StartGame");
+		// call js and have it call .NET
+		// on each call, get elapsed and run
+		// some number of instructions
+		await iJsRuntime.InvokeAsync<object>
+		(
+			JSMethod.startGameLoop,
+			DotNetObjectReference.Create(this)
+		);
+	}
+
+	private async Task TrySomething()
+	{
+		// unmarshalled canvas
+		// https://github.com/jhwcn/BlazorUnmarshalledCanvas
+		// Blazor.platform.getArrayEntryPtr
+		// https://stackoverflow.com/questions/64803155/blazor-to-javascript-byte-array-interop
+		// https://github.com/SteveSandersonMS/BlazorMigration/commit/b5128a7efd20b09bf8268722c2bada65b507b7da
+		// https://github.com/canhorn/EventHorizon.Blazor.TypeScript.Interop.Generator/issues/34
+
+		// BabylonJS
+		// https://darnton.co.nz/2020/07/23/3d-blazor-with-babylon/
+
+		// No html ID avaliable in this
+		//var qq = System.Text.Json.JsonSerializer.Serialize(_canvasReference);
+		onInit = "button clicked ";
+		var isWebAssembly = iJsRuntime is IJSInProcessRuntime;
+
+
+		// Ctor runs too soon to capture mono binding
+		await iJsRuntime.InvokeAsync<string>(JSMethod.initialize);
+
+		// Until we get the stupid ID in Canvas
+		var canvasId1 = await iJsRuntime
+			.InvokeAsync<string>(JSMethod.jeffGetCanvasId);
+
+		// Check if the IJSRuntime is the WebAssembly implementation of the JSRuntime
+		if (iJsRuntime is IJSUnmarshalledRuntime wasmJsRuntime)
+		{
+			Console.WriteLine($"Calling Unmarshalled drawPixelsUnm {canvasId1}");
+			// NOTE: it's cheaper to pass the 222 bytes of display
+			// and put the entire refresh SS in Typescript
+			// But this passes the x,y of pixels to turn on
+			byte[] bytes = new byte[222*4*2];
+			var offset = 0;
+			for (var x = 0; x < 222; x++)
+				for (var y = 0; y < 8; y+=2)
+				{
+					bytes[offset++] = (byte)x;
+					bytes[offset++] = (byte)y;
+				}
+			Console.WriteLine($"Offset: {offset}");
+
+			var ret = wasmJsRuntime.InvokeUnmarshalled<string, byte[], int>
+			(
+				JSMethod.drawPixelsUnm,
+				canvasId1,
+				bytes
+			);
+
+#if false
+			var byteArray = wasmJsRuntime.InvokeUnmarshalled<string, byte[]>
+			(
+				"mcm70.JeffHailMary",
+				canvasId1
+			);
+			if( byteArray == null)
+			{
+				Console.WriteLine($"Byte[] null");
+			}
+			else
+			{
+				Console.WriteLine($"Byte[] thinks it's {byteArray.Length}");
+				for(var i = 0; i < 10000; i++)
+				{
+					byteArray[i]=255;
+				}
+				wasmJsRuntime.InvokeUnmarshalled<string, int>
+				(
+					"mcm70.JeffHailMary2",
+					canvasId1
+				);
+			}
+#endif
+		}
+
+#if false
+		// downcast to IJSInProcessRuntime will allow non async versions
+		await iJsRuntime.InvokeVoidAsync("console.log", "Hello Blazor!");
+		if( isWebAssembly )
+		{
+			Console.WriteLine("The app is running on WebAssembly");
+
+			var iJSInProcessRuntime = (IJSInProcessRuntime)iJsRuntime;
+			iJSInProcessRuntime.InvokeVoid("console.log", "Non-Async logging");
+
+			// Until we get the stupid ID in Canvas
+			var canvasId = iJSInProcessRuntime.Invoke<string>("mcm70.JeffGetCanvasId");
+			// doesn't work	 var x = _canvasReference.CanvasReference.Id;
+
+			Logger.LogInformation($"Logged from Logger {canvasId}");
+
+			await iJsRuntime.InvokeVoidAsync("mcm70.JeffTest", canvasId);
+		}
+#endif
+	}
+
+
+	protected async Task DrawImageToCanvas()
+	{
+		imagesReady = true;
+		if (_context2d != null)
+		{
+			await _context2d.DrawImageAsync
+			(
+				_imgRef,
+				0,
+				0,
+				EmulatorWidth,
+				EmulatorHeight
+			);
+		}
+		else
+		{
+			Console.WriteLine("DrawImageToCanvas() no context");
+		}
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+
+		Logger.LogInformation($"OnAfterRenderAsync {firstRender}");
+		if(!firstRender)
+		{
+			return;
+		}
+		// Unmarshalled Interop
+		// https://docs.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/call-javascript-from-dotnet?view=aspnetcore-5.0#unmarshalled-javascript-interop
+
+		//https://docs.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/call-javascript-from-dotnet?view=aspnetcore-3.1#capture-references-to-elements
+		
+		//https://stackoverflow.com/questions/61321942/efficient-way-of-painting-html-canvas-image-by-pixels-using-blazor-client-side
+		_context2d = await _canvasReference.CreateCanvas2DAsync();
+
+	}
+
+
+
+
+}
