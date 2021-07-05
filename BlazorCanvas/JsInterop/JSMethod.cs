@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace BlazorCanvas.JsInterop
+﻿namespace BlazorCanvas.JsInterop
 {
 	/// <summary>
 	/// Defined in mcmCanvas.ts
@@ -11,10 +6,18 @@ namespace BlazorCanvas.JsInterop
 	public static class JSMethod
 	{
 		private const string ns = "mcm70.";
+
 		public static string initialize => $"{ns}initialize";
 		public static string startGameLoop => $"{ns}startGameLoop";
 		public static string gameLoop => $"{ns}gameLoop";
-		public static string jeffGetCanvasId => $"{ns}jeffGetCanvasId";
-		public static string drawPixelsUnm => $"{ns}drawPixelsUnm";
+		public static string drawImageToCanvas => $"{ns}drawImageToCanvas";
+
+		// UnMarshalled
+		public static string refreshSsUnm => $"{ns}refreshSsUnm";
+		public static string clearSsUnm => $"{ns}clearSsUnm";
+		public static string dspAplPrinterOperations => $"{ns}dspAplPrinterOperations";
+		// Unused
+		public static string scrollTextTest => $"{ns}scrollTextTest";
+
 	}
 }
