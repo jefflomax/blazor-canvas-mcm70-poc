@@ -11,7 +11,7 @@ namespace BlazorCanvas.Emulator
 			AplFont[] aplFonts,
 			byte[] prErrorOff,
 			byte[] prErrorOn
-		) : base(new byte[944*700*3], aplFonts, prErrorOff, prErrorOn)
+		) : base(new byte[Printer.p_width * Printer.p_height *3], aplFonts, prErrorOff, prErrorOn)
 		{
 			// TODO: check if we over-run operations array
 			PackedArray = new uint[132*66];
@@ -32,7 +32,12 @@ namespace BlazorCanvas.Emulator
 			Encode(x, y, i);
 		}
 
-		public override void BlankBlock(int x, int y, int w, int h, int c)
+		public override void BlankBlock
+		(
+			int x, int y,
+			int w, int h,
+			int c
+		)
 		{
 			Encode(x, y, c, true);
 			Encode(w, h, c, true);
@@ -43,7 +48,12 @@ namespace BlazorCanvas.Emulator
 			return ( i & 0xFF, (i >> 8) & 0x07);
 		}
 
-		private void Encode(int x, int y, int ch, bool bit31=false)
+		private void Encode
+		(
+			int x, int y,
+			int ch,
+			bool bit31=false
+		)
 		{
 			var xlh = ElevenBit(x);
 			var ylh = ElevenBit(y);

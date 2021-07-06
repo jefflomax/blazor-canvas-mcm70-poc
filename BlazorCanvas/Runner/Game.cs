@@ -10,18 +10,22 @@ namespace BlazorCanvas.Runner
 {
 	public class Game
 	{
+		private readonly AppState _appState;
+		private readonly InitializeWasm _emulatorData;
+		private readonly IJSUnmarshalledRuntime _iJSUnmarshalledRuntime;
+		private readonly string _canvasId;
+
+		private const int EmulatorWidth = 932; // emulator window's width
+		private const int EmulatorHeight = 722;
+
 		private bool _isInitialized;
-		private InitializeWasm _emulatorData;
 		private Machine _machine;
 		private Display _display;
 		private Keyboard _keyboard;
 		private Cpu _cpu;
 		private PrinterWasm _printer;
-		private readonly IJSUnmarshalledRuntime _iJSUnmarshalledRuntime;
-		private string _canvasId;
-		private readonly AppState _appState;
-		private const int EmulatorWidth = 932; // emulator window's width
-		private const int EmulatorHeight = 722;
+		private PrinterMouse _printerMouse;
+		
 		// In order to compute 0.7 / iota 255 in 50 seconds,
 		// we need to execute around 65000 instructions per second
 		private static readonly int InstructionsPerFrame = 1090; // Until we have timing
@@ -77,7 +81,7 @@ namespace BlazorCanvas.Runner
 			);
 			_machine.AddPrinter(_printer);
 
-			var printerMouse = new PrinterMouse(_printer);
+			_printerMouse = new PrinterMouse(_printer);
 
 			_display = new DisplayWasm
 			(
@@ -255,7 +259,7 @@ namespace BlazorCanvas.Runner
 			_keyboard.keyboard(key);
 		}
 
-		public MouseAction Click
+		public MouseAction EmulatorClick
 		(
 			MouseButtonSel mb,
 			bool isShift,
@@ -270,6 +274,24 @@ namespace BlazorCanvas.Runner
 				mb,
 				isPressed:true,
 				isShift,
+				fx,
+				fy
+			);
+		}
+
+		public void PrinterClick
+		(
+			bool isLeftButton,
+			double x,
+			double y
+		)
+		{
+			var fx = (float)x;
+			var fy = (float)y;
+			_printerMouse.MouseClick
+			(
+				isLeftButton,
+				isPressed: true,
 				fx,
 				fy
 			);

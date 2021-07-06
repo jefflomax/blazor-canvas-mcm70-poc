@@ -1,4 +1,4 @@
-﻿ using System;
+﻿using System;
 
 namespace MCMShared.Emulator
 {
@@ -318,8 +318,6 @@ namespace MCMShared.Emulator
 
 		public void ResetPrinter()
 		{
-#if SKIP_WASM
-#else
 			pr_status = (byte)(pr_status & 0xFB);		// rest printer status to "paper in" (bit 2 set to 0)
 			page_top = page_start;
 			BlankBlock(car_X, head_Y, 12, 12, 124);	// blank current head position
@@ -328,7 +326,6 @@ namespace MCMShared.Emulator
 			PrinterRestore();							// display printer error off image
 
 			Redisplay = true;
-#endif
 		}
 
 		/*-----------------------------------------------------------------------------------------
