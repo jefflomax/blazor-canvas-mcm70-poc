@@ -148,8 +148,6 @@ namespace BlazorCanvas.Runner
 			await Task.CompletedTask;
 			if (!_isInitialized)
 			{
-				//await Init(_emulatorData);
-
 				GameTime.Start();
 				then = GameTime.TotalMilliseconds;
 

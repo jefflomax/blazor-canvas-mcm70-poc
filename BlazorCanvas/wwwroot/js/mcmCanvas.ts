@@ -78,6 +78,13 @@ namespace Mcm70JSInterop {
 			});
 		}
 
+		/**
+		 * Draw IMG element into canvasId
+		 * @param elementRef
+		 * @param canvasId
+		 * @param width
+		 * @param height
+		 */
 		public drawImageToCanvas = (elementRef: any,
 			canvasId: string,
 			width: number,
@@ -102,7 +109,7 @@ namespace Mcm70JSInterop {
 		/**
 		 * Refresh Self-Scan display unmarshalled
 		 * @param {string} canvasId - mono string
-		 * @param {Uint8Array} bytes - 242 byte mono array
+		 * @param {Uint8Array} bytes - all memory mono array 242 byte display @0x2021
 		 */
 		public refreshSsUnm = (canvasId, bytes): number => {
 			const y_off = 75
@@ -118,8 +125,8 @@ namespace Mcm70JSInterop {
 				canvasElement.width, y_delta);
 			const data = imageData.data;
 
-			for (let i = 0; i < 222; i++) {
-				const h = memory[i];// get a column byte from memory (it is inverted!)
+			for (let i = 0, mi = 0x2021; i < 222; i++, mi++) {
+				const h = memory[mi];// get a column byte from memory (it is inverted!)
 				let mask = 1;
 				for (let j = 0; j < 7; j++) {
 					if ((h & mask) != 0) {

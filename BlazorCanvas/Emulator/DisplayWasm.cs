@@ -32,18 +32,14 @@ namespace BlazorCanvas.Emulator
 		public override void refresh_SS()
 		{
 			// display every column represented by bytes stored in mem[2021]-mem[20FE]
-			ReadOnlySpan<byte> displayBytes = _memory;
-			var display = displayBytes.Slice(0x2021, 222);
-			var bytes = display.ToArray(); // sadly this makes a copy
-			// TODO:
-			// + why not pass the address of the entire memory and let JS index into it?
-			// - or alter all memory writes to go to a buffer the size of the display?
+			// found no way to extract the 222 bytes for the display without copying
+			// so we pass a reference to all of memory
 
 			var ret = _iJSUnmarshalledRuntime.InvokeUnmarshalled<string, byte[], int>
 			(
 				JSMethod.refreshSsUnm,
 				_canvasId,
-				bytes
+				_memory
 			);
 		}
 
