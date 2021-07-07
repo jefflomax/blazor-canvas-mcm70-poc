@@ -76,7 +76,7 @@ var Mcm70JSInterop;
             /**
              * Refresh Self-Scan display unmarshalled
              * @param {string} canvasId - mono string
-             * @param {Uint8Array} bytes - 242 byte mono array
+             * @param {Uint8Array} bytes - all memory mono array 242 byte display @0x2021
              */
             this.refreshSsUnm = (canvasId, bytes) => {
                 const y_off = 75;

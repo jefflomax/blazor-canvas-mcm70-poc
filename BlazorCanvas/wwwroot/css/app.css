@@ -48,3 +48,26 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+    @font-face {
+        font-family: "fonts-3270";
+        src: url("fonts/3270-Regular.woff") format("woff");
+    }
+
+    .aplFont {
+        font-family: fonts-3270;
+        font-size: 14pt;
+    }
+
+    .aligncenter {
+        text-align:center;
+    }
+
+    .padl20 {
+        padding-left: 20px;
+     }
+
+    .padLeft3 {
+        padding-left: 3px;
+    }
+}
