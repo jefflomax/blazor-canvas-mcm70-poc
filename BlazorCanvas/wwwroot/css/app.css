@@ -59,15 +59,15 @@ a, .btn-link {
         font-size: 14pt;
     }
 
-    .aligncenter {
-        text-align:center;
+    .tablePadding {
     }
 
-    .padl20 {
-        padding-left: 20px;
-     }
+    table.tablePadding td, table.tablePadding th {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
 
-    .padLeft3 {
-        padding-left: 3px;
+    .aligncenter {
+        text-align:center;
     }
 }
