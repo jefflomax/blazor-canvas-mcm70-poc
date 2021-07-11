@@ -13,7 +13,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Emulator\" />
+    <None Remove="tapes\demo.tp" />
+    <None Remove="tapes\eject" />
+    <None Remove="tapes\empty.tp" />
+    <None Remove="tapes\utils.tp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="tapes\demo.tp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="tapes\eject">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="tapes\empty.tp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="tapes\utils.tp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

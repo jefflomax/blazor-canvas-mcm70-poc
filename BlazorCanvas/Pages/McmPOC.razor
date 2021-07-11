@@ -27,7 +27,7 @@
 	@onkeydown:preventDefault
 	@onclick="EmulatorCanvasOnClick"
 	@onclick:preventDefault
-	@ref="_canvasReference"></canvas>
+	@ref="_emulatorCanvasRef"></canvas>
 </div>
 <div class="row">&nbsp;</div>
 <div class="row">
@@ -39,7 +39,7 @@
 	tabindex="-1"
 	@onclick="PrinterCanvasOnClick"
 	@onclick:preventDefault
-	@ref="_printerCanvasReference"
+	@ref="_printerCanvasRef"
 	></canvas>
 </div>
 
@@ -66,18 +66,85 @@
 @* Hidden image tags drawn to canvas after load *@
 <img
 	id="mcm"
-	src="images/mcm70.png"
+	src="images/panel.png"
 	hidden
 	title="MCM/70"
-	@onload="@(() => DrawElementToCanvas(_imgRef,canvasId,EmulatorWidth,EmulatorHeight))"
-	@ref="_imgRef"/>
+	@onload="@(() => DrawElementToCanvas
+		(
+			_panelImgRef,
+			canvasId,
+			EmulatorWidth,
+			EmulatorHeight
+		))"
+	@ref="_panelImgRef"/>
 <img
 	id="print"
 	src="images/printer.png"
 	hidden
 	title="printer"
-	@onload="@(() => DrawElementToCanvas(_printerRef,printerId,PrinterWidth,PrinterHeight))"
-	@ref="_printerRef"/>
+	@onload="@(() => DrawElementToCanvas
+		(
+			_printerImgRef,
+			printerId,
+			PrinterWidth,
+			PrinterHeight
+		))"
+	@ref="_printerImgRef"/>
+
+@* Hidden images we just need to draw *@
+<img id="tape_loaded_opened_img"
+	src="images/tape_loaded_opened.png"
+	hidden
+	title="tape loaded opened"
+	@onload="@(() => DrawElementToCanvas
+		(
+			_tapeLoadedOpenedImgRef,
+			ImagesWasm.TapeLoadedOpened.Str(),
+			TapeLoadedOpenedWidth,
+			TapeLoadedOpenedHeight
+		))"
+	@ref="_tapeLoadedOpenedImgRef"/>
+<img id="@ImagesWasm.SpinLeft.Str()"
+	src="images/spin_left.png"
+	hidden
+	title="spin left"
+	@ref="_spinLeft"/>
+<img id="@ImagesWasm.SpinRight.Str()"
+	src="images/spin_right.png"
+	hidden
+	title="spin right"
+	@ref="_spinRight"/>
+<img id="@ImagesWasm.SpinStop.Str()"
+	src="images/spin_stop.png"
+	hidden
+	title="spin right"
+	@ref="_spinStop"/>
+<img id="@ImagesWasm.TapeEmptyClosed.Str()"
+	src="images/tape_empty_closed.png"
+	hidden
+	title="tape empty closed"
+	@ref="_tapeEmptyClosed"/>
+<img id="@ImagesWasm.TapeEmptyOpened.Str()"
+	src="images/tape_empty_opened.png"
+	hidden
+	title="tape empty opened"
+	@ref="_tapeEmptyOpened"/>
+<img id="@ImagesWasm.TapeLoadedClosed.Str()"
+	src="images/tape_loaded_closed.png"
+	hidden
+	title="tape loaded closed"
+	@ref="_tapeLoadedClosed"/>
+@* This takes advantage of drawImage taking a CanvasImageSource *@
+@* So we can pass it a IMG or CANVAS and it works just the same *@
+@* To display the label on the cassette, the loaded opened image *@
+@* is copied from img to canvas, and the tape name is drawn on the canvas *@
+<canvas
+	id="@ImagesWasm.TapeLoadedOpened.Str()"
+	hidden
+	width="@TapeLoadedOpenedWidth"
+	height="@TapeLoadedOpenedHeight"
+	@ref="_tapeLoadedOpenedCanvasRef"
+	></canvas>
 
 @code {
 	// https://developer.mozilla.org/en-US/docs/WebAssembly/Using_the_JavaScript_API
@@ -92,14 +159,27 @@
 
 	private static readonly string canvasId = "emulator";
 	private static readonly string printerId = "printer";
-	protected ElementReference _imgRef;
-	protected ElementReference _printerRef;
-	protected ElementReference _canvasReference;
-	protected ElementReference _printerCanvasReference;
+	protected ElementReference _panelImgRef;
+	protected ElementReference _printerImgRef;
+	protected ElementReference _emulatorCanvasRef;
+	protected ElementReference _printerCanvasRef;
+	protected ElementReference _tapeLoadedOpenedCanvasRef;
+
+	protected ElementReference _spinLeft;
+	protected ElementReference _spinRight;
+	protected ElementReference _spinStop;
+	protected ElementReference _tapeEmptyClosed;
+	protected ElementReference _tapeEmptyOpened;
+	protected ElementReference _tapeLoadedOpenedImgRef;
+	protected ElementReference _tapeLoadedClosed;
+
 	private static readonly int EmulatorWidth = 932; // emulator window's width
 	private static readonly int EmulatorHeight = 722;
 	private static readonly int PrinterWidth = 944;
 	private static readonly int PrinterHeight = 700;
+	private static readonly int TapeLoadedOpenedWidth = 409;
+	private static readonly int TapeLoadedOpenedHeight = 256;
+
 	private static readonly int PrinterOpsPerDisplay = 16;
 	private bool hidePrinter = true;
 	private bool imagesReady = false;
@@ -113,7 +193,6 @@
 	{
 		// int component is ms since page load
 		// decimals are microseconds
-		//Console.WriteLine($".NET GameLoop {time}");
 		if (null == _game)
 			return -1;
 		var instructionCountOrStop = await _game.Step();
@@ -207,17 +286,11 @@
 
 	private void CanvasOnKeypress(KeyboardEventArgs ke)
 	{
-		//Console.WriteLine($"code {ke.Code} key {ke.Key} type {ke.Type} {ke.ToString()}");
-
 		if( imagesReady && _game != null)
 		{
 			if( ke.Key.Length == 1 )
 			{
 				//var bytes = Encoding.ASCII.GetBytes(ke.Key);
-				//if( (byte)ke.Key[0] != bytes[0])
-				//{
-				//	Console.WriteLine($"Conversion failed {ke.Key}");
-				//}
 				_game.Key((byte)ke.Key[0]);
 				return;
 			}
@@ -240,15 +313,21 @@
 
 	private void EmulatorCanvasOnClick(MouseEventArgs me)
 	{
-		// This will be needed for printer, cassette click etc
+		// printer, cassette click etc
 
 		if( imagesReady && _game!= null && _game.IsInitialized)
 		{
+			// TODO: Cleanup "right click"
 			var button = (me.Button == 0)
 				? MouseButtonSel.Left
 				: (me.Button == 2)
 					? MouseButtonSel.Right
 					: MouseButtonSel.Unknown;
+
+			if (me.CtrlKey || me.ShiftKey && me.Button == 0)
+			{
+				button = MouseButtonSel.Right;
+			}
 
 			var action = _game.EmulatorClick
 			(
@@ -284,7 +363,6 @@
 
 	private async Task StartEmulator()
 	{
-		
 		// call js and have it call .NET
 		// on each call, get elapsed and run
 		// some number of instructions
@@ -294,7 +372,7 @@
 			JSMethod.startGameLoop,
 			DotNetObjectReference.Create(this)
 		);
-		await _canvasReference.FocusAsync();
+		await _emulatorCanvasRef.FocusAsync();
 	}
 
 
@@ -332,6 +410,7 @@
 		// https://stackoverflow.com/questions/61321942/efficient-way-of-painting-html-canvas-image-by-pixels-using-blazor-client-side
 
 		var assembly = this.GetType().Assembly;
+		// TODO: and MCMShared assembly
 
 		var initialize = LoadEmbeddedResourcesBlazorWebAssembly(assembly);
 
@@ -348,7 +427,7 @@
 
 		await _game.Init(initialize);
 
-		await _canvasReference.FocusAsync();
+		await _emulatorCanvasRef.FocusAsync();
 	}
 
 	// Add NuGet package Microsoft.Extensions.FileProviders.Embedded

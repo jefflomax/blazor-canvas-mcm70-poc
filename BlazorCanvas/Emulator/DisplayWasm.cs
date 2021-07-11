@@ -7,9 +7,10 @@ namespace BlazorCanvas.Emulator
 {
 	public class DisplayWasm : Display
 	{
-		private byte[] _memory;
+		private readonly byte[] _memory;
 		private readonly IJSUnmarshalledRuntime _iJSUnmarshalledRuntime;
-		private string _canvasId;
+		private readonly string _canvasId;
+
 		public DisplayWasm
 		(
 			byte[] panel,
@@ -25,6 +26,7 @@ namespace BlazorCanvas.Emulator
 			_canvasId = canvasId;
 			_iJSUnmarshalledRuntime = iJSUnmarshalledRuntime;
 		}
+
 
 		//------------------------------------------------------
 		//      refresh SelfScan; all 222 columns are refreshed
@@ -57,7 +59,28 @@ namespace BlazorCanvas.Emulator
 
 		public override void SubImage(int x, int y, int w, int h, byte[] a)
 		{
+			// To ease compatibility with the earlier emulator code, each
+			// image coming from an IMG element has a single byte enumeration
+			// which is also the Image IDs
+			if(a == null || a.Length != 1)
+			{
+				return;
+			}
 
+			byte imageWasmValue = a[0];
+			if ( imageWasmValue >= (byte)ImagesWasm.SpinLeft && imageWasmValue <= (byte)ImagesWasm.TapeLoadedOpened)
+			{
+				ImagesWasm img = (ImagesWasm)imageWasmValue;
+				string imgId = img.Str();
+
+				var ret = _iJSUnmarshalledRuntime.InvokeUnmarshalled<string,int,int,int>
+				(
+					JSMethod.drawImageUnm,
+					imgId,
+					x,
+					y
+				);
+			}
 		}
 	}
 }

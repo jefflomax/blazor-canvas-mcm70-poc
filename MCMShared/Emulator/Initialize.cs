@@ -44,6 +44,7 @@ namespace MCMShared.Emulator
 		{
 			InitRoms();
 			InitFonts();
+			InitImages(_assembly);
 		}
 
 		public void InitRoms()
@@ -141,8 +142,8 @@ namespace MCMShared.Emulator
 				? ch - '0'
 				: ch - 'A' + 10;
 		}
-#if false
-		private void InitImages(Assembly assembly)
+
+		protected virtual void InitImages(Assembly assembly)
 		{
 			Panel = ReadImageResource(assembly, "MCM70.images.panel.data");
 
@@ -200,7 +201,7 @@ namespace MCMShared.Emulator
 			using var binaryReader = new BinaryReader(stream);
 			return binaryReader.ReadBytes((int)stream.Length);
 		}
-#endif
+
 		public void ProcessFonts(byte[] fonts)
 		{
 			AplFonts = new AplFont[12];

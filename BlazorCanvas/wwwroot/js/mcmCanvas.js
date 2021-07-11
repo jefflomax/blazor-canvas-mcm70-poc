@@ -74,6 +74,20 @@ var Mcm70JSInterop;
                 context.drawImage(elementRef, 0, 0, width, height);
             };
             /**
+             * Draw image to emulator canvas at dx,dy unmarshalled
+             * @param sourceId
+             * @param dx
+             * @param dy
+             */
+            this.drawImageUnm = (sourceId, dx, dy) => {
+                const imgId = this.monoBinding.conv_string(sourceId);
+                const elementRef = document.getElementById(imgId);
+                const canvasElement = document.getElementById("emulator");
+                const context = canvasElement.getContext('2d');
+                context.drawImage(elementRef, dx, dy);
+                return 0;
+            };
+            /**
              * Refresh Self-Scan display unmarshalled
              * @param {string} canvasId - mono string
              * @param {Uint8Array} bytes - all memory mono array 242 byte display @0x2021
@@ -349,7 +363,7 @@ var Mcm70JSInterop;
             this.unpack1 = [0, 0, 0];
             this.unpack2 = [0, 0, 0];
             /**
-             * Display API Printer Operations Unmarshalled
+             * Display APL Printer Operations Unmarshalled
              * Takes .NET byte[] of APL fonts, Int32[] of packed operations and operation count
              * Draws characters or fill blocks
              * @param {Uint8Array} aplFonts
@@ -416,7 +430,7 @@ var Mcm70JSInterop;
                 const p = char * 36; // 36 = (12 pixels of font image width )* 3 RGB values
                 // print char
                 for (let y1 = 0; y1 < 12; y1++) {
-                    s1 = 4 * ((y + y1) * PrinterWidth); //+ s;
+                    s1 = 4 * ((y + y1) * PrinterWidth);
                     fontOffset = y1 * AplFontWidth;
                     for (let x1 = 0; x1 < 12; x1++) {
                         let jsx = (x + x1) * 4;
@@ -436,6 +450,65 @@ var Mcm70JSInterop;
                         csx++;
                         if (fonts[fontOffset + csx + p] < data[s1 + jsx]) // the "if" guard is introduced to
                          {
+                            data[s1 + jsx] = fonts[fontOffset + csx + p]; // allow overwriting characters
+                        }
+                    }
+                }
+            };
+            this.unpackCass = [0, 0, 0];
+            this.dspAplCassette = (aplFonts, xy, ch) => {
+                // Marshall
+                const fonts = window.Blazor.platform.toUint8Array(aplFonts);
+                const y = xy & 0xFFFF;
+                const x = (xy >>> 16) & 0xFFFF;
+                this.unpackCass[0] = x;
+                this.unpackCass[1] = y;
+                this.unpackCass[2] = ch;
+                const canvasElement = document.getElementById("TapeLoadedOpened");
+                const context = canvasElement.getContext('2d');
+                const imageData = context.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                const data = imageData.data;
+                this.dspAplCass(this.unpackCass, data, fonts, imageData.width);
+                context.putImageData(imageData, 0, 0, x, y, 12, 12);
+                return 0;
+            };
+            // TODO: Combine the 2 char draw routines
+            this.dspAplCass = (unpacked, //0:x 1:y 2:c
+            data, fonts, canvasWidth) => {
+                const AplFontWidth = 3888;
+                let fontOffset = 0;
+                const x = unpacked[0];
+                const y = unpacked[1];
+                const char = unpacked[2];
+                let s1;
+                // compute starting pixel position of a char in printer's window 
+                //const s = 4 * ((PrinterWidth * y) + x);
+                // compute the first color value of i-th font in apl_fonts image
+                const p = char * 36; // 36 = (12 pixels of font image width )* 3 RGB values
+                // print char
+                for (let y1 = 0; y1 < 12; y1++) {
+                    s1 = 4 * ((y + y1) * canvasWidth);
+                    fontOffset = y1 * AplFontWidth;
+                    for (let x1 = 0; x1 < 12; x1++) {
+                        let jsx = (x + x1) * 4;
+                        let csx = x1 * 3;
+                        //var fv = fonts[fontOffset + csx + p];
+                        // The Cassette rendering cannot have this "or"
+                        // that the printer rendering needs to support overstrike
+                        //if (fonts[fontOffset + csx + p] < data[s1 + jsx]) // the "if" guard is introduced to
+                        {
+                            data[s1 + jsx] = fonts[fontOffset + csx + p]; // allow overwriting characters
+                        }
+                        jsx++;
+                        csx++;
+                        //if (fonts[fontOffset + csx + p] < data[s1 + jsx]) // the "if" guard is introduced to
+                        {
+                            data[s1 + jsx] = fonts[fontOffset + csx + p]; // allow overwriting characters
+                        }
+                        jsx++;
+                        csx++;
+                        //if (fonts[fontOffset + csx + p] < data[s1 + jsx]) // the "if" guard is introduced to
+                        {
                             data[s1 + jsx] = fonts[fontOffset + csx + p]; // allow overwriting characters
                         }
                     }

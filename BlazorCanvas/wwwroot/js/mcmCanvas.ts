@@ -97,6 +97,24 @@ namespace Mcm70JSInterop {
 		}
 
 		/**
+		 * Draw image to emulator canvas at dx,dy unmarshalled
+		 * @param sourceId
+		 * @param dx
+		 * @param dy
+		 */
+		public drawImageUnm = (sourceId: any,
+			dx: number,
+			dy: number): number => {
+			const imgId: string = this.monoBinding.conv_string(sourceId);
+			const elementRef = document.getElementById(imgId) as CanvasImageSource;
+
+			const canvasElement = document.getElementById("emulator") as HTMLCanvasElement;
+			const context = canvasElement.getContext('2d');
+			context.drawImage(elementRef, dx, dy);
+			return 0;
+		}
+
+		/**
 		 * Marshalls a Mono/.NET 32 bit array to Javascript without copying
 		 * @param system_array
 		 */
@@ -456,7 +474,7 @@ namespace Mcm70JSInterop {
 
 
 		/**
-		 * Display API Printer Operations Unmarshalled
+		 * Display APL Printer Operations Unmarshalled
 		 * Takes .NET byte[] of APL fonts, Int32[] of packed operations and operation count
 		 * Draws characters or fill blocks
 		 * @param {Uint8Array} aplFonts
@@ -550,7 +568,7 @@ namespace Mcm70JSInterop {
 
 			// print char
 			for (let y1 = 0; y1 < 12; y1++) {
-				s1 = 4 * ((y + y1) * PrinterWidth);//+ s;
+				s1 = 4 * ((y + y1) * PrinterWidth);
 				fontOffset = y1 * AplFontWidth;
 				for (let x1 = 0; x1 < 12; x1++) {
 					let jsx = (x+x1) *4;
@@ -574,8 +592,87 @@ namespace Mcm70JSInterop {
 					}
 				}
 			}
-
 		}
+
+		private unpackCass: number[] = [0, 0, 0];
+
+		public dspAplCassette = (aplFonts, xy, ch): number => {
+			// Marshall
+			const fonts: Uint8Array = window.Blazor.platform.toUint8Array(aplFonts);
+			const y: number = xy & 0xFFFF;
+			const x: number = (xy >>> 16) & 0xFFFF;
+			this.unpackCass[0] = x;
+			this.unpackCass[1] = y;
+			this.unpackCass[2] = ch;
+
+			const canvasElement = document.getElementById("TapeLoadedOpened") as HTMLCanvasElement;
+			const context = canvasElement.getContext('2d');
+			const imageData = context.getImageData(0, 0, canvasElement.width, canvasElement.height);
+			const data = imageData.data;
+
+			this.dspAplCass(this.unpackCass, data, fonts, imageData.width);
+
+			context.putImageData(imageData,
+				0, 0,
+				x, y,
+				12, 12);
+
+			return 0;
+		}
+
+		// TODO: Combine the 2 char draw routines
+		private dspAplCass = (unpacked: number[], //0:x 1:y 2:c
+			data: Uint8ClampedArray,
+			fonts: Uint8Array,
+			canvasWidth:number
+			): void => {
+
+			const AplFontWidth = 3888;
+			let fontOffset = 0;
+
+			const x = unpacked[0];
+			const y = unpacked[1];
+			const char = unpacked[2];
+
+			let s1;
+
+			// compute starting pixel position of a char in printer's window 
+			//const s = 4 * ((PrinterWidth * y) + x);
+
+			// compute the first color value of i-th font in apl_fonts image
+			const p = char * 36;	// 36 = (12 pixels of font image width )* 3 RGB values
+
+			// print char
+			for (let y1 = 0; y1 < 12; y1++) {
+				s1 = 4 * ((y + y1) * canvasWidth);
+				fontOffset = y1 * AplFontWidth;
+				for (let x1 = 0; x1 < 12; x1++) {
+					let jsx = (x + x1) * 4;
+					let csx = x1 * 3;
+					//var fv = fonts[fontOffset + csx + p];
+
+					// The Cassette rendering cannot have this "or"
+					// that the printer rendering needs to support overstrike
+					//if (fonts[fontOffset + csx + p] < data[s1 + jsx]) // the "if" guard is introduced to
+					{
+						data[s1 + jsx] = fonts[fontOffset + csx + p]; // allow overwriting characters
+					}
+					jsx++;
+					csx++;
+					//if (fonts[fontOffset + csx + p] < data[s1 + jsx]) // the "if" guard is introduced to
+					{
+						data[s1 + jsx] = fonts[fontOffset + csx + p]; // allow overwriting characters
+					}
+					jsx++;
+					csx++;
+					//if (fonts[fontOffset + csx + p] < data[s1 + jsx]) // the "if" guard is introduced to
+					{
+						data[s1 + jsx] = fonts[fontOffset + csx + p]; // allow overwriting characters
+					}
+				}
+			}
+		}
+
 
 		public setDotNetInstance = (instance) => {
 			this.instanceTest = instance;

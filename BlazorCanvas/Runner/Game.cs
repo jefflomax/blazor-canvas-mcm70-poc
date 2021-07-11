@@ -20,7 +20,7 @@ namespace BlazorCanvas.Runner
 
 		private bool _isInitialized;
 		private Machine _machine;
-		private Display _display;
+		private DisplayWasm _display;
 		private Keyboard _keyboard;
 		private Cpu _cpu;
 		private PrinterWasm _printer;
@@ -98,14 +98,17 @@ namespace BlazorCanvas.Runner
 			_keyboard = new Keyboard();
 			_machine.AddKeyboard(_keyboard);
 
-			var tapes = new Tapes
+			var tapes = new TapesWasm
 			(
 				emulatorData.TapeLO,
 				emulatorData.TapeEO,
 				emulatorData.SpinStop,
 				emulatorData.SpinRight,
 				emulatorData.SpinLeft,
-				emulatorData.AplFonts
+				emulatorData.AplFonts,
+				_iJSUnmarshalledRuntime,
+				emulatorData.AplFonts[0].GetType().Assembly, // Assembly w/Tape image resources
+				emulatorData.AllFonts
 			);
 			_machine.AddTapes(tapes);
 

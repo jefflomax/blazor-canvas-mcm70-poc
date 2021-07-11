@@ -37,7 +37,8 @@ To use the printer:<br />
 		<tr><td>4 5 &#x2374; 20 ? 52</td><td>4 hands of cards</td></tr>
 		<tr>
 			<td>A &#x2190; 3 5 9 6 4 5 &#x23BA;1</td>
-			<td rowspan="2" valign="center">Sort A</td></tr>
+			<td rowspan="2" valign="center">Sort A</td>
+		</tr>
 		<tr><td>A[&#x234B;A]</td></tr>
 		<tr><td>0.7 &#xF7; &#x2373; 255</td><td>Took 50 seconds on original hardware</td></tr>
 	</tbody>
@@ -58,13 +59,37 @@ To use the printer:<br />
 	<tr><td>QUAD</td><td align="center">&#x2395;</td><td>SHIFT - L</td><td>System Command, Input, Output</td></tr>
 	<tr><td>Assignment</td><td align="center">&#x2190;</td><td> [ </td><td>Desctructive Assignment</td></tr>
 	<tr><td>IOTA</td><td align="center">&#x2373;</td><td>SHIFT - I</td><td>List Comprehension</td></tr>
-	<tr><td>Reshape</td><td align="center">&#x2374;</td><td>SHIFT - R</td><td>alters shape of vector or matrix</td></tr>
+	<tr><td>Reshape</td><td align="center">&#x2374;</td><td>SHIFT - R</td><td>Alters shape of vector or matrix</td></tr>
 	<tr><td>Grade Up</td><td align="center">&#x234B;</td><td>SHIFT - M Backspace SHIFT-H</td><td>Returns ascending sort indices</td></tr>
 	<tr><td>Negation</td><td align="center">&#x23BA;</td><td>SHIFT - 2</td><td>In APL, negation and subtraction are distinct</td></tr>
 	<tr><td>Multiply</td><td align="center">&#x2715;</td><td> = </td><td>In APL, multiply has it's own symbol and is not *</td></tr>
 	<tr><td>Divide</td><td align="center">&#xF7;</td><td> + </td><td>In APL, divide has it's own symbol and is not /</td></tr>
-
 </table>
 </div>
+<br />
+<div class="aplFont">
+<table border="1" style="min-width:600px" class="tablePadding">
+	<thead>
+		<tr><th colspan="2">Cassette Support (in progress):</th></tr>
+		<tr>
+			<th>Input</th>
+			<th>Output</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr><td>Left Click the left tape drive</td><td>Tape Opens</td></tr>
+		<tr><td>Shift Left Click the left tape drive</td><td>Tape Appears - labelling coming</td></tr>
+		<tr><td>Left Click the left tape drive</td><td>Tape Closes and Loads</td></tr>
+		<tr><td>&#x2395;XN &#x2373;0</td><td>List groups on tape</td></tr>
 
+		<tr><td>&#x2395;XN 80</td><td>Show content of group number</td></tr>
+		<tr><td>Click Printer Icon</td><td rowspan="3" valign="center">Show content of group on printer</td></tr>
+		<tr><td>&#x2395;OUT 1</td></tr>
+		<tr><td>&#x2395; &#x2190; &#x2395; XN 80</td></tr>
+
+		<tr><td>&#x2395;XR 'name1 name2 nameN'</td><td>Load objects from group</td></tr>
+	</tbody>
+</table>
+</div>
+<br />
 </div>

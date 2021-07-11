@@ -16,6 +16,9 @@
 		public static string refreshSsUnm => $"{ns}refreshSsUnm";
 		public static string clearSsUnm => $"{ns}clearSsUnm";
 		public static string dspAplPrinterOperations => $"{ns}dspAplPrinterOperations";
+		public static string drawImageUnm => $"{ns}drawImageUnm";
+		public static string dspAplCassette => $"{ns}dspAplCassette";
+
 		// Unused
 		public static string scrollTextTest => $"{ns}scrollTextTest";
 

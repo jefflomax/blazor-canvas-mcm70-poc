@@ -25,7 +25,7 @@ namespace MCMShared.Emulator
 		private readonly byte[] _spinRight;
 		private readonly byte[] _spinLeft;
 		private readonly AplFont[] _aplFonts;
-		private readonly List<TapeEntry> _tapeEntryList;
+		protected readonly List<TapeEntry> _tapeEntryList;
 
 
 		//--------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ namespace MCMShared.Emulator
 		   write the APL char with MCM/APL code i at coordinates x, y on a cassette;
 		   used by label_cassette_N
 		--------------------------------------------------------------------------*/
-		private void DspAplCass(int i, int x, int y)
+		protected virtual void DspAplCass(int i, int x, int y)
 		{
 			int p, s, s1, x1, y1;
 
@@ -235,8 +235,7 @@ namespace MCMShared.Emulator
 			int size;
 			int length = 0;
 
-			var fi = new FileInfo(s);
-			if (fi.Exists)
+			if (FileExists(s))
 			{
 				// determine the number of tape bytes stored in s; calculate tape length    
 				size = GetTapeBytes(s, null);
@@ -290,10 +289,21 @@ namespace MCMShared.Emulator
 			}
 		}
 
-		private static int GetTapeBytes(string filePath, int[] buffer)
+		protected virtual StreamReader GetTapeStream(string filePath)
+		{
+			return File.OpenText(filePath);
+		}
+
+		protected virtual bool FileExists(string fileName)
+		{
+			var fi = new FileInfo(fileName);
+			return fi.Exists;
+		}
+
+		private int GetTapeBytes(string filePath, int[] buffer)
 		{
 			var i = 0;
-			using (var streamReader = File.OpenText(filePath))
+			using (var streamReader = GetTapeStream(filePath))
 			{
 				while (!streamReader.EndOfStream)
 				{
@@ -489,7 +499,7 @@ namespace MCMShared.Emulator
 
 			var tapeEntry = _tapeEntryList.First(t => t.Id == option);
 			var fileName = tapeEntry.Name;
-			fileName = Path.GetFileName(tapeEntry.Name);
+			fileName = GetFileName(tapeEntry);
 			i = option;
 
 			// if the selected drive has closed lid -- do nothing, tape cannot be loaded
@@ -525,33 +535,28 @@ namespace MCMShared.Emulator
 			}
 		}
 
-		private class TapeEntry
+		protected virtual string GetFileName(TapeEntry te)
 		{
-			public TapeEntry(int id, string name)
-			{
-				Id = id;
-				Name = name;
-			}
-			public int Id { get; }
-			public string Name { get; }
+			var fileName = Path.GetFileName(te.Name);
+			return fileName;
 		}
+
+
 		//--------------------------------------------------
 		//  TapeEntries: Create menu entries
 		//--------------------------------------------------
-		public void TapeEntries()
+		public virtual void TapeEntries()
 		{
 			// Do I need to port freeGLUT freeglut_menu.c
 			// Read tapes from CONFIG, display on Printer?
 			// Temporary fix show tape name on cassette, cycle thru with right click
-#if SKIP_WASM
-#else
+
 			_tapeEntryList.AddRange
 			(
 				Directory
 					.EnumerateFiles("tapes", "*.*", SearchOption.AllDirectories)
 					.Select((f, ind) => new TapeEntry(ind, f))
 			);
-#endif
 		}
 
 		public int NextTapeIndex(int index)

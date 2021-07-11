@@ -2,12 +2,15 @@
 using System.IO;
 using System.Reflection;
 using MCMShared.Emulator;
+using Microsoft.AspNetCore.Components;
 
 namespace BlazorCanvas.Emulator
 {
 	public class InitializeWasm : Initialize
 	{
 		public byte[] AllFonts;
+		// TODO: This was supposed to be the MCMShared assembly
+		public Assembly GetAssembly => _assembly;
 
 		public override void SetAssembly(Assembly assembly)
 		{
@@ -33,6 +36,23 @@ namespace BlazorCanvas.Emulator
 				"BlazorCanvas.Shared.APL_F.apl_fonts.data"
 			);
 			ProcessFonts(AllFonts);
+		}
+
+		protected override void InitImages(Assembly assembly)
+		{
+			TapeEO = ImageAsByte(ImagesWasm.TapeEmptyOpened);
+			TapeEC = ImageAsByte(ImagesWasm.TapeEmptyClosed);
+			TapeLO = ImageAsByte(ImagesWasm.TapeLoadedOpened);
+			TapeLC = ImageAsByte(ImagesWasm.TapeLoadedClosed);
+
+			SpinLeft = ImageAsByte(ImagesWasm.SpinLeft);
+			SpinRight = ImageAsByte(ImagesWasm.SpinRight);
+			SpinStop = ImageAsByte(ImagesWasm.SpinStop);
+		}
+
+		private static byte[] ImageAsByte(ImagesWasm image)
+		{
+			return new byte[] { (byte)image };
 		}
 
 		// Add NuGet package Microsoft.Extensions.FileProviders.Embedded
