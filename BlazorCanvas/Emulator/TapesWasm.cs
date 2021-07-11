@@ -26,8 +26,9 @@ namespace BlazorCanvas.Emulator
 			AplFont[] aplFonts,
 			IJSUnmarshalledRuntime iJSUnmarshalledRuntime,
 			Assembly mcmSharedAssembly,
-			byte[] allFonts
-		):base(tapeLo, tapeEo, spinStop, spinRight, spinLeft, aplFonts)
+			byte[] allFonts,
+			List<TapeEntry> tapeEntries
+		) :base(tapeLo, tapeEo, spinStop, spinRight, spinLeft, aplFonts, tapeEntries)
 		{
 			_iJSUnmarshalledRuntime = iJSUnmarshalledRuntime;
 			_allFonts = allFonts;
@@ -40,10 +41,29 @@ namespace BlazorCanvas.Emulator
 			var t1 = new TapeEntry(1, $"{ResourceName}utils.tp");
 			var t2 = new TapeEntry(2, $"{ResourceName}empty.tp");
 			var t3 = new TapeEntry(3, "eject");
-			_tapeEntryList.Add(t0);
+			_tapeEntryList = new List<TapeEntryWasm>();
+
+			_tapeEntryList.Add(new TapeEntryWasm);
 			_tapeEntryList.Add(t1);
 			_tapeEntryList.Add(t2);
 			_tapeEntryList.Add(t3);
+		}
+
+		private static TapeEntryWasm TapeEntry
+		(
+			int id,
+			bool embedded,
+			string name,
+			bool hasData = true
+		)
+		{
+			return new TapeEntryWasm
+			(
+				id,
+				(embedded) ? $"{ResourceName}name" : name,
+				embedded,
+				hasData
+			);
 		}
 
 		protected override void DspAplCass(int i, int x, int y)

@@ -25,7 +25,7 @@ namespace MCMShared.Emulator
 		private readonly byte[] _spinRight;
 		private readonly byte[] _spinLeft;
 		private readonly AplFont[] _aplFonts;
-		protected readonly List<TapeEntry> _tapeEntryList;
+		protected List<TapeEntry> _tapeEntryList;
 
 
 		//--------------------------------------------------------------------------------
@@ -38,7 +38,8 @@ namespace MCMShared.Emulator
 			byte[] spinStop,
 			byte[] spinRight,
 			byte[] spinLeft,
-			AplFont[] aplFonts
+			AplFont[] aplFonts,
+			List<TapeEntry> tapeEntries
 		)
 		{
 			_tapeLo = tapeLo;
@@ -88,7 +89,7 @@ namespace MCMShared.Emulator
 
 			tape0 = new int[0];
 			tape1 = new int[0];
-			_tapeEntryList = new List<TapeEntry>();
+			_tapeEntryList = tapeEntries;
 			TapeEntries();
 		}
 
