@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MCMShared.Extensions;
 
 namespace MCMShared.Emulator
 {
-	public class Tapes
+	public abstract class Tapes
 	{
 		public TP tape0_s;
 		public TP tape1_s;				// status of tape0 and tape1, and other information    
@@ -25,8 +24,6 @@ namespace MCMShared.Emulator
 		private readonly byte[] _spinRight;
 		private readonly byte[] _spinLeft;
 		private readonly AplFont[] _aplFonts;
-		protected List<TapeEntry> _tapeEntryList;
-
 
 		//--------------------------------------------------------------------------------
 		// InitTapes: initialize both tapes to "unloaded" when the emulator is started
@@ -38,8 +35,7 @@ namespace MCMShared.Emulator
 			byte[] spinStop,
 			byte[] spinRight,
 			byte[] spinLeft,
-			AplFont[] aplFonts,
-			List<TapeEntry> tapeEntries
+			AplFont[] aplFonts
 		)
 		{
 			_tapeLo = tapeLo;
@@ -89,8 +85,6 @@ namespace MCMShared.Emulator
 
 			tape0 = new int[0];
 			tape1 = new int[0];
-			_tapeEntryList = tapeEntries;
-			TapeEntries();
 		}
 
 		public int MoveClock { get; set; }			// needed for advancing the tape
@@ -231,19 +225,33 @@ namespace MCMShared.Emulator
 			input: s  -- path name of tape to be loaded
 				   id -- derive id where tape should be loaded (0 - left, 1 - right)
 		---------------------------------------------------------------------------*/
-		private void LoadTape(string s, int id)
+		private void LoadTape(string s, int id, int tapeEntryId)
 		{
 			int size;
 			int length = 0;
 
-			if (FileExists(s))
+			if (IsPreloaded(tapeEntryId))
+			{
+				tape = GetTapeData(tapeEntryId);
+				length = tape.Length;
+				Console.WriteLine($"Preloaded Tape {tapeEntryId} {tape.Length}");
+				if (id == 0)
+				{
+					tape0 = tape;
+				}
+				else
+				{
+					tape1 = tape;
+				}
+			}
+			else if (FileExists(s))
 			{
 				// determine the number of tape bytes stored in s; calculate tape length    
-				size = GetTapeBytes(s, null);
-				Console.WriteLine($"Loading tape {s} Length {size:N0} on device {id}");
+				size = GetTapeBytes(s, null, tapeEntryId);
 
 				length = size;							// sz= number of tape bytes
-				if (length < 10000) length = 180000;	// if tape is short, make it longer so that it could be
+				length = MinimumTapeLength(length);
+				//if (length < 10000) length = 180000;	// if tape is short, make it longer so that it could be
 				// read/written to correctly
 
 				// allocated space for tape in tape drive; space is deallocated on closing GLUT window or ejecting tape from drive
@@ -262,14 +270,15 @@ namespace MCMShared.Emulator
 				if (size < 10000)
 				{
 					//  if sz < 10000, then it is an empty tape; fill it with 0x100 and return
-					for (var i = 0; i < length; i++)
-					{
-						tape[i] = 0x100;
-					}
+					//for (var i = 0; i < length; i++)
+					//{
+					//	tape[i] = 0x100;
+					//}
+					Array.Fill(tape, 0x100);
 				}
 				else
 				{
-					GetTapeBytes(s, tape);
+					GetTapeBytes(s, tape, tapeEntryId);
 				}
 			}
 
@@ -290,6 +299,23 @@ namespace MCMShared.Emulator
 			}
 		}
 
+		protected virtual bool IsPreloaded(int tapeEntryId)
+		{
+			return false;
+		}
+
+		protected virtual int[] GetTapeData(int tapeEntryId)
+		{
+			return null;
+		}
+
+		protected static int MinimumTapeLength(int length)
+		{
+			return (length < 10000)
+				? 180000    // if tape is short, make it longer so that it could be
+				: length;
+		}
+
 		protected virtual StreamReader GetTapeStream(string filePath)
 		{
 			return File.OpenText(filePath);
@@ -301,32 +327,44 @@ namespace MCMShared.Emulator
 			return fi.Exists;
 		}
 
-		private int GetTapeBytes(string filePath, int[] buffer)
+		private int GetTapeBytes(string filePath, int[] buffer, int tapeEntryId)
 		{
 			var i = 0;
 			using (var streamReader = GetTapeStream(filePath))
 			{
-				while (!streamReader.EndOfStream)
+				i=ReadTapeFromStream(buffer, streamReader);
+				// TODO: Watch for tape short logic
+			}
+
+			return i;
+		}
+
+		protected int ReadTapeFromStream
+		(
+			int[] buffer,
+			StreamReader streamReader
+		)
+		{
+			var i = 0;
+			while (!streamReader.EndOfStream)
+			{
+				var line = streamReader.ReadLine();
+				if (line == null)
 				{
-					var line = streamReader.ReadLine();
-					if (line == null)
+					break;
+				}
+				foreach (var token in line.Split(' '))
+				{
+					if (!string.IsNullOrWhiteSpace(token))
 					{
-						break;
-					}
-					foreach (var token in line.Split(' '))
-					{
-						if (!string.IsNullOrWhiteSpace(token))
+						var value = Convert.ToInt32(token, 16);
+						if (buffer != null)
 						{
-							var value = Convert.ToInt32(token, 16);
-							if (buffer != null)
-							{
-								buffer[i] = value;
-							}
-							i++ ;
+							buffer[i] = value;
 						}
+						i++;
 					}
 				}
-				// TODO: Watch for tape short logic
 			}
 
 			return i;
@@ -336,7 +374,7 @@ namespace MCMShared.Emulator
 		   save_tape: saves tape in id's drive (id=0 for left drive and =1 for right drive)
 					  in tapes' directory under the name s
 		---------------------------------------------------------------------------------*/
-		private void SaveTape(string s, int id)
+		protected virtual void SaveTape(string s, int id, int tapeEntryId)
 		{
 			int i, length;
 
@@ -375,14 +413,14 @@ namespace MCMShared.Emulator
 
 		private bool _tape0Loaded;
 		private int _tape0ToSave;
-		private int _tape0IdSelected;
+		protected int _tape0IdSelected;
 		private bool _tape0SelectedIsEject;
 		private string _tape0SelectedPath;
 		private string _tape0SelectedName;
 
 		private bool _tape1Loaded;
 		private int _tape1ToSave;
-		private int _tape1IdSelected;
+		protected int _tape1IdSelected;
 		private bool _tape1SelectedIsEject;
 		private string _tape1SelectedPath;
 		private string _tape1SelectedName;
@@ -397,7 +435,8 @@ namespace MCMShared.Emulator
 						return false;
 					}
 
-					LoadTape(_tape0SelectedPath, 0);
+					Console.WriteLine($"Finalize TL {_tape0IdSelected} {_tape0ToSave}");
+					LoadTape(_tape0SelectedPath, 0, _tape0IdSelected);
 					_tape0ToSave = _tape0IdSelected;
 					tape0_s.name = _tape0SelectedName;
 					_machine.SelectedDevice = 0xC8;    // load tape
@@ -411,7 +450,7 @@ namespace MCMShared.Emulator
 						return false;
 					}
 
-					LoadTape(_tape1SelectedPath, 1);
+					LoadTape(_tape1SelectedPath, 1, _tape1IdSelected);
 					_tape1ToSave = _tape1IdSelected;
 					tape1_s.name = _tape1SelectedName;
 					_machine.SelectedDevice = 0xC9;		// load tape
@@ -456,7 +495,8 @@ namespace MCMShared.Emulator
 				switch (tapeDrive)
 				{
 					case 0:
-						SaveTape(tape0_s.name, 0);					// save tape0 to file
+						Console.WriteLine($"Eject/Save {_tape0ToSave}");
+						SaveTape(tape0_s.name, 0, _tape0ToSave);		// save tape0 to file
 						tape0 = null;
 						tape0_s.status = 13;						// change tape status to no tape
 						_display.SubImage(40, 148, 409, 256, _tapeEo);		// display empty drive on emulator's panel
@@ -465,7 +505,7 @@ namespace MCMShared.Emulator
 						_tape0SelectedIsEject = false;
 						break;
 					case 1:
-						SaveTape(tape1_s.name, 0);					// save tape1 to file
+						SaveTape(tape1_s.name, 1, _tape1ToSave);		// save tape1 to file
 						tape1 = null;
 						tape1_s.status = 13;						// change tape status to no tape
 						_display.SubImage(483, 148, 409, 256, _tapeEo);		// display empty drive on emulator's panel
@@ -498,8 +538,8 @@ namespace MCMShared.Emulator
 			// determine which drive is selected
 			t = tapeDevice;
 
-			var tapeEntry = _tapeEntryList.First(t => t.Id == option);
-			var fileName = tapeEntry.Name;
+			var tapeEntry = GetTapeEntry(option);
+			var fileName = tapeEntry.GetName();
 			fileName = GetFileName(tapeEntry);
 			i = option;
 
@@ -508,7 +548,7 @@ namespace MCMShared.Emulator
 			if ((t == 1) && (tape1_s.lid == 0)) return;
 
 			// tape can be loaded: make path name for the selected tape
-			var tapePath = tapeEntry.Name;		// make path name for selected tape
+			var tapePath = tapeEntry.GetPathName();		// make path name for selected tape
 
 			// load and display tape in the selected drive
 			if (i == option)
@@ -536,9 +576,15 @@ namespace MCMShared.Emulator
 			}
 		}
 
+		protected virtual TapeEntry GetTapeEntry(int id)
+		{
+			return null;
+		}
+
 		protected virtual string GetFileName(TapeEntry te)
 		{
-			var fileName = Path.GetFileName(te.Name);
+			// TODO: can we remove
+			var fileName = Path.GetFileName(te.GetName());
 			return fileName;
 		}
 
@@ -548,25 +594,10 @@ namespace MCMShared.Emulator
 		//--------------------------------------------------
 		public virtual void TapeEntries()
 		{
-			// Do I need to port freeGLUT freeglut_menu.c
-			// Read tapes from CONFIG, display on Printer?
-			// Temporary fix show tape name on cassette, cycle thru with right click
-
-			_tapeEntryList.AddRange
-			(
-				Directory
-					.EnumerateFiles("tapes", "*.*", SearchOption.AllDirectories)
-					.Select((f, ind) => new TapeEntry(ind, f))
-			);
 		}
 
-		public int NextTapeIndex(int index)
+		public virtual int NextTapeIndex(int index)
 		{
-			if (++index < _tapeEntryList.Count)
-			{
-				return index;
-			}
-
 			return 0;
 		}
 

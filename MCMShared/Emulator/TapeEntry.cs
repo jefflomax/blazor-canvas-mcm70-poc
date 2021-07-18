@@ -1,19 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace MCMShared.Emulator
 {
 	public class TapeEntry
 	{
-		public TapeEntry(int id, string name)
+		protected string _name;
+		public TapeEntry(int id, string name, bool isEject = false)
 		{
 			Id = id;
-			Name = name;
+			_name = name;
+			IsEject = isEject;
 		}
-		public int Id { get; }
-		public string Name { get; }
+
+		public int Id { get; set; }
+		public virtual string GetName()
+		{
+			return _name;
+		}
+		public string GetPathName()
+		{
+			return _name;
+		}
+		public bool IsEject { get; set; }
 	}
 }

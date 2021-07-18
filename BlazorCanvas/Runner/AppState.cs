@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlazorCanvas.Emulator;
 
 namespace BlazorCanvas.Runner
 {
@@ -11,7 +12,21 @@ namespace BlazorCanvas.Runner
 
 		public int InstructionsPerSecond { get; private set; }
 
+		public List<TapeEntryWasm> TapeEntriesToSave { get; private set; }
+
 		public event Action OnChange;
+
+		public AppState()
+		{
+			TapeEntriesToSave = new List<TapeEntryWasm>();
+		}
+
+		public void AddTapeEntryToSave(TapeEntryWasm te)
+		{
+			TapeEntriesToSave.Add(te);
+			NotifyStateChanged();
+		}
+
 
 		public void SetInstructionCount(long ic)
 		{

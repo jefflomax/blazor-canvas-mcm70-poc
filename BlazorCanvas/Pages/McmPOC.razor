@@ -50,6 +50,7 @@
 	type="button"
 	title="Start"
 	@onclick="StartEmulator">Start Emulator</button>
+@*
 <button
 	id="doit"
 	type="button"
@@ -62,6 +63,7 @@
 	name="testUnmarshalled"
 	title="Test Unmarshalled"
 	@onclick="TestUnmarshalled">Test Unmarshalled</button>
+*@
 
 @* Hidden image tags drawn to canvas after load *@
 <img
@@ -69,26 +71,14 @@
 	src="images/panel.png"
 	hidden
 	title="MCM/70"
-	@onload="@(() => DrawElementToCanvas
-		(
-			_panelImgRef,
-			canvasId,
-			EmulatorWidth,
-			EmulatorHeight
-		))"
+	@onload="@(()=>DrawElementToCanvas(_panelImgRef,canvasId,EmulatorWidth,EmulatorHeight))"
 	@ref="_panelImgRef"/>
 <img
 	id="print"
 	src="images/printer.png"
 	hidden
 	title="printer"
-	@onload="@(() => DrawElementToCanvas
-		(
-			_printerImgRef,
-			printerId,
-			PrinterWidth,
-			PrinterHeight
-		))"
+	@onload="@(()=>DrawElementToCanvas(_printerImgRef,printerId,PrinterWidth,PrinterHeight))"
 	@ref="_printerImgRef"/>
 
 @* Hidden images we just need to draw *@
@@ -96,13 +86,7 @@
 	src="images/tape_loaded_opened.png"
 	hidden
 	title="tape loaded opened"
-	@onload="@(() => DrawElementToCanvas
-		(
-			_tapeLoadedOpenedImgRef,
-			ImagesWasm.TapeLoadedOpened.Str(),
-			TapeLoadedOpenedWidth,
-			TapeLoadedOpenedHeight
-		))"
+	@onload="@(()=>DrawElementToCanvas(_tapeLoadedOpenedImgRef,ImagesWasm.TapeLoadedOpened.Str(),TapeLoadedOpenedWidth,TapeLoadedOpenedHeight))"
 	@ref="_tapeLoadedOpenedImgRef"/>
 <img id="@ImagesWasm.SpinLeft.Str()"
 	src="images/spin_left.png"
@@ -146,6 +130,32 @@
 	@ref="_tapeLoadedOpenedCanvasRef"
 	></canvas>
 
+
+<EditForm EditContext="EditContext" style="margin:10px;">
+<div>
+<label for="tapetosave">Select a tape to save</label>
+<InputSelect
+	id="tapetosave"
+	Value="@_tapeEntry.Id"
+	ValueChanged="@((int args) => {_tapeEntry.Id = args;})"
+	ValueExpression="@(() => _tapeEntry.Id )">
+	<option value="-1">Select Tape to Save</option>
+	@foreach (var tapeEntry in AppState.TapeEntriesToSave)
+	{
+		<option value="@tapeEntry.Id">@tapeEntry.GetName()</option>
+	}
+</InputSelect>
+<button disabled="@(_tapeEntry.Id == -1)"
+	@onclick="@(async (e) => await this.SaveTapeOnClick(e))"
+	>Save Tape</button>
+</div>
+<div>
+<label for="tapetoload">Select a tape to load</label>
+<InputFile id="tapetoload" OnChange="@UploadTape"></InputFile>
+</div>
+</EditForm>
+
+
 @code {
 	// https://developer.mozilla.org/en-US/docs/WebAssembly/Using_the_JavaScript_API
 	// Blazor interop tests
@@ -187,6 +197,10 @@
 	private int printerRedisplayCounter = 0;
 	private static readonly long InstructionStepCounterThreshold = 0x40000;
 	private long _instructionCountStep = InstructionStepCounterThreshold;
+
+	private EditContext EditContext;
+	private TapeEntryWasm _tapeEntry = new TapeEntryWasm(-1, "none", false, false, false);
+
 
 	[JSInvokable]
 	public async ValueTask<int> GameLoop(double time)
@@ -231,24 +245,6 @@
 				);
 				_game.ClearPrinterOperationList();
 			}
-#if false
-			if( _game.HasRedrawList )
-			{
-				//Console.WriteLine($"Calling Printer Render");
-				var redrawList = _game.GetRedrawList();
-				var _iJSUnmarshalledRuntime = iJsRuntime as IJSUnmarshalledRuntime;
-				// At this time, unmarshalled invoke only takes
-				// 3 parameters (plus the method name)
-				_iJSUnmarshalledRuntime.InvokeUnmarshalled<string, int[], byte[], int>
-				(
-					JSMethod.renderPrinterUnm,
-					printerId,
-					redrawList,
-					_game.PrinterWindow
-				);
-				_game.ResetRedrawList();
-			}
-#endif
 		}
 
 		if( instructionCountOrStop >= _instructionCountStep)
@@ -265,6 +261,8 @@
 		hidePrinter = true;
 
 		printerRedisplayCounter = 0;
+
+		EditContext = new EditContext(_tapeEntry);
 
 #if false
 		// This works, but of course the array is in mono not JS
@@ -357,6 +355,38 @@
 				me.Button == 0,
 				me.OffsetX,
 				me.OffsetY
+			);
+		}
+	}
+
+	private async Task UploadTape(InputFileChangeEventArgs e)
+	{
+		var ms = new MemoryStream();
+		var maxAllowedSize = 1024*1024;
+		await e.File.OpenReadStream(maxAllowedSize).CopyToAsync(ms);
+		
+		var bytes = ms.ToArray();
+		var name = e.File.Name;
+
+		if(_game != null)
+		{
+			_game.AddTapeEntry(name, bytes);
+		}
+	}
+
+	private async Task SaveTapeOnClick(MouseEventArgs me)
+	{
+		await Task.CompletedTask;
+
+		var (tapeArray, tapeName) = _game.GetTapeEntryImage(_tapeEntry.Id);
+
+		if (iJsRuntime is IJSUnmarshalledRuntime wasmJsRuntime)
+		{
+			var ret = wasmJsRuntime.InvokeUnmarshalled<string, byte[], int>
+			(
+				JSMethod.downloadFileUnm,
+				tapeName,
+				tapeArray
 			);
 		}
 	}

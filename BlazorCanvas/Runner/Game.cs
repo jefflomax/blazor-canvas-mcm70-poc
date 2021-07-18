@@ -25,7 +25,8 @@ namespace BlazorCanvas.Runner
 		private Cpu _cpu;
 		private PrinterWasm _printer;
 		private PrinterMouse _printerMouse;
-		
+		private TapesWasm _tapes;
+
 		// In order to compute 0.7 / iota 255 in 50 seconds,
 		// we need to execute around 65000 instructions per second
 		private static readonly int InstructionsPerFrame = 1090; // Until we have timing
@@ -46,6 +47,12 @@ namespace BlazorCanvas.Runner
 		public uint[] PrinterOperations => _printer.PrinterOperations;
 
 		public byte[] AllFonts => _emulatorData.AllFonts;
+
+		public (byte[] Tape, string Name) GetTapeEntryImage(int id) =>
+			_tapes.GetTapeEntryImage(id);
+
+		public void AddTapeEntry(string name, byte[] rawImage) =>
+			_tapes.AddTapeEntry(name, rawImage);
 
 		public Game
 		(
@@ -69,6 +76,11 @@ namespace BlazorCanvas.Runner
 		}
 
 		public bool IsInitialized => _isInitialized;
+
+		private void ChangedAppState(int i)
+		{
+			_appState.AddTapeEntryToSave(_tapes.GetTapeEntryWasm(i));
+		}
 
 		public async ValueTask Init(InitializeWasm emulatorData)
 		{
@@ -98,7 +110,7 @@ namespace BlazorCanvas.Runner
 			_keyboard = new Keyboard();
 			_machine.AddKeyboard(_keyboard);
 
-			var tapes = new TapesWasm
+			_tapes = new TapesWasm
 			(
 				emulatorData.TapeLO,
 				emulatorData.TapeEO,
@@ -107,10 +119,12 @@ namespace BlazorCanvas.Runner
 				emulatorData.SpinLeft,
 				emulatorData.AplFonts,
 				_iJSUnmarshalledRuntime,
-				emulatorData.AplFonts[0].GetType().Assembly, // Assembly w/Tape image resources
-				emulatorData.AllFonts
+				// Assembly w/Tape image resources
+				emulatorData.AplFonts[0].GetType().Assembly,
+				emulatorData.AllFonts,
+				ChangedAppState
 			);
-			_machine.AddTapes(tapes);
+			_machine.AddTapes(_tapes);
 
 			var emulatorMouse = new EmulatorMouse
 			(

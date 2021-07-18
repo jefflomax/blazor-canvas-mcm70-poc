@@ -514,6 +514,29 @@ var Mcm70JSInterop;
                     }
                 }
             };
+            this.downloadFileUnm = (csFileName, bytes) => {
+                const jsFile = this.monoBinding.conv_string(csFileName);
+                const memory = window.Blazor.platform.toUint8Array(bytes);
+                // annoyingly, if the download references .net memory
+                // it crashes
+                const jsMemory = new Uint8Array(memory.length);
+                for (let i = 0; i < memory.length; i++) {
+                    jsMemory[i] = memory[i];
+                }
+                const bpb = { type: "string" };
+                const blob = new Blob([jsMemory.buffer], bpb);
+                const url = URL.createObjectURL(blob);
+                this.downloadFromUrl({ url: url, fileName: jsFile });
+                return 0;
+            };
+            this.downloadFromUrl = (options) => {
+                var _a;
+                const anchorElement = document.createElement('a');
+                anchorElement.href = options.url;
+                anchorElement.download = (_a = options.fileName) !== null && _a !== void 0 ? _a : '';
+                anchorElement.click();
+                anchorElement.remove();
+            };
             this.setDotNetInstance = (instance) => {
                 this.instanceTest = instance;
                 return 0;

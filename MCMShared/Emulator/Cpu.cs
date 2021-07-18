@@ -165,10 +165,7 @@ namespace MCMShared.Emulator
 
 		public void InitMemory(byte[] rom6K, byte[] rom)
 		{
-			for( var i = 0; i < 0x1800; i++)
-			{
-				_memory[i] = rom6K[i];
-			}
+			Array.Copy(rom6K, 0, _memory, 0, 0x1800);
 
 			ROM = rom;
 		}
@@ -989,10 +986,9 @@ namespace MCMShared.Emulator
 					//rom.CopyTo(mem)
 
 					// bank copied to memory starting at address 0x1800, $800 (2048) bytes
-					for (int iRom = Bank*0x800, iMem=0; iMem < 0x800; iMem++, iRom++)
-					{
-						_memory[0x1800 + iMem] = ROM[iRom];
-					}
+
+					Array.Copy(ROM, Bank*0x800, _memory, 0x1800, 0x800);
+
 					break;
 				case 0x53: /* OUT 09   -- I/O device selection:
 				- device address (given in reg. A) is placed on OMNIPORT data lines  -- emulated but not implemented;

@@ -673,6 +673,31 @@ namespace Mcm70JSInterop {
 			}
 		}
 
+		public downloadFileUnm = (csFileName: any, bytes: any): number => {
+			const jsFile: string = this.monoBinding.conv_string(csFileName);
+			const memory: Uint8Array = window.Blazor.platform.toUint8Array(bytes);
+
+			// annoyingly, if the download references .net memory
+			// it crashes
+			const jsMemory: Uint8Array = new Uint8Array(memory.length);
+			for (let i = 0; i < memory.length; i++) {
+				jsMemory[i] = memory[i];
+			}
+			const bpb = <globalThis.BlobPropertyBag>{ type: "string" };
+			const blob = new Blob([jsMemory.buffer], bpb);
+			const url = URL.createObjectURL(blob);
+			this.downloadFromUrl({ url: url, fileName: jsFile });
+			return 0;
+		}
+
+		private downloadFromUrl = (options: { url: string, fileName?: string }): void => {
+			const anchorElement = document.createElement('a');
+			anchorElement.href = options.url;
+			anchorElement.download = options.fileName ?? '';
+			anchorElement.click();
+			anchorElement.remove();
+		}
+
 
 		public setDotNetInstance = (instance) => {
 			this.instanceTest = instance;

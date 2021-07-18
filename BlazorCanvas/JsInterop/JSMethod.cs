@@ -18,6 +18,7 @@
 		public static string dspAplPrinterOperations => $"{ns}dspAplPrinterOperations";
 		public static string drawImageUnm => $"{ns}drawImageUnm";
 		public static string dspAplCassette => $"{ns}dspAplCassette";
+		public static string downloadFileUnm => $"{ns}downloadFileUnm";
 
 		// Unused
 		public static string scrollTextTest => $"{ns}scrollTextTest";

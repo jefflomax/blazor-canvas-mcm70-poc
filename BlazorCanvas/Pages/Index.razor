@@ -4,7 +4,7 @@
 <h1><a href="https://en.wikipedia.org/wiki/MCM/70" target="_blank">MCM/70</a> <a href="http://www.cse.yorku.ca/museum/collections/MCM/MCM.htm" target="_blank">Emulator</a></h1>
 <h5><a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/" target="_blank">C#</a> <a href="https://docs.microsoft.com/en-us/dotnet/core/introduction" target="_blank">.NET 5.0</a> <a href="https://webassembly.org/" target="_blank">Web</a> <a href="https://developer.mozilla.org/en-US/docs/WebAssembly/Using_the_JavaScript_API" target="_blank">Assembly</a> <a href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor" target="_blank">Blazor Client Side</a></h5>
 <h6><a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a> <a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D" target="_blank">HTML 2D Canvas</a> <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.jsinterop?view=dotnet-plat-ext-6.0" target="_blank">IJSUnmarshalledRuntime</a></h6>
-<h5>&copy; 2019 Zbigniew Stachniak</h5>
+<h5>&copy; 2019 <a href="https://www.amazon.com/Inventing-PC-MCM-70-Story/dp/0773538526" target="_blank">Zbigniew</a> <a href="https://www.linkedin.com/in/zbigniew-stachniak-6649a213" target="_blank">Stachniak</a></h5>
 <h5>&copy; 2021 <a href="https://github.com/jefflomax" target="_blank">Jeff</a><a href="https://www.linkedin.com/in/jlomax/" target="_blank"> Lomax</a></h5>
 <h5>&copy; 2015 Mike Willegal (8008-disassembler.c)</h5>
 <div>To start, click the MCM POC link, then scroll down and click Start Emulator<br />
@@ -82,12 +82,13 @@ To use the printer:<br />
 		<tr><td>Left Click the left tape drive</td><td>Tape Closes and Loads</td></tr>
 		<tr><td>&#x2395;XN &#x2373;0</td><td>List groups on tape</td></tr>
 
-		<tr><td>&#x2395;XN 80</td><td>Show content of group number</td></tr>
-		<tr><td>Click Printer Icon</td><td rowspan="3" valign="center">Show content of group on printer</td></tr>
+		<tr><td>&#x2395;XN 80</td><td>Show content of group number 80</td></tr>
+		<tr><td>Click Printer Icon</td><td rowspan="3" valign="center">Show content of group 80 on printer</td></tr>
 		<tr><td>&#x2395;OUT 1</td></tr>
 		<tr><td>&#x2395; &#x2190; &#x2395; XN 80</td></tr>
 
-		<tr><td>&#x2395;XR 'name1 name2 nameN'</td><td>Load objects from group</td></tr>
+		<tr><td>GroupNumber &#x2395;XR 'name1 name2 nameN'</td><td>Load objects from group</td></tr>
+		<tr><td>GroupNumber &#x2395;XR &#x2395;XN GroupNumber</td><td>Load all objects from group</td></tr>
 	</tbody>
 </table>
 </div>
