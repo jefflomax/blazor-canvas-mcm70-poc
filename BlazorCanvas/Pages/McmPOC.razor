@@ -29,6 +29,11 @@
 	@onclick:preventDefault
 	@ref="_emulatorCanvasRef"></canvas>
 </div>
+<SelectTape
+	Display="@showTapeSelector"
+	Tapes="@Tapes"
+	OnTapeSelected="OnTapeToLoadSelected"
+></SelectTape>
 <div class="row">&nbsp;</div>
 <div class="row">
 <canvas
@@ -133,13 +138,13 @@
 
 <EditForm EditContext="EditContext" style="margin:10px;">
 <div>
-<label for="tapetosave">Select a tape to save</label>
+<label for="tapetosave">Select a tape to download</label>
 <InputSelect
 	id="tapetosave"
 	Value="@_tapeEntry.Id"
 	ValueChanged="@((int args) => {_tapeEntry.Id = args;})"
 	ValueExpression="@(() => _tapeEntry.Id )">
-	<option value="-1">Select Tape to Save</option>
+	<option value="-1">Select Tape to download</option>
 	@foreach (var tapeEntry in AppState.TapeEntriesToSave)
 	{
 		<option value="@tapeEntry.Id">@tapeEntry.GetName()</option>
@@ -150,7 +155,7 @@
 	>Save Tape</button>
 </div>
 <div>
-<label for="tapetoload">Select a tape to load</label>
+<label for="tapetoload">Select a tape to make available to load</label>
 <InputFile id="tapetoload" OnChange="@UploadTape"></InputFile>
 </div>
 </EditForm>
@@ -201,6 +206,8 @@
 	private EditContext EditContext;
 	private TapeEntryWasm _tapeEntry = new TapeEntryWasm(-1, "none", false, false, false);
 
+	private bool showTapeSelector = false;
+	public BlazorCanvas.Emulator.TapeEntriesWasm Tapes { get; set; } = null;
 
 	[JSInvokable]
 	public async ValueTask<int> GameLoop(double time)
@@ -262,6 +269,8 @@
 
 		printerRedisplayCounter = 0;
 
+		Tapes = new BlazorCanvas.Emulator.TapeEntriesWasm();
+
 		EditContext = new EditContext(_tapeEntry);
 
 #if false
@@ -322,15 +331,10 @@
 					? MouseButtonSel.Right
 					: MouseButtonSel.Unknown;
 
-			if (me.CtrlKey || me.ShiftKey && me.Button == 0)
-			{
-				button = MouseButtonSel.Right;
-			}
-
 			var action = _game.EmulatorClick
 			(
 				button,
-				me.ShiftKey,
+				me.ShiftKey || me.CtrlKey,
 				me.OffsetX,
 				me.OffsetY
 			);
@@ -342,7 +346,43 @@
 				case MouseAction.PrinterOff:
 					hidePrinter = true;
 					break;
+				case MouseAction.Tape0Opened:
+					ShowSelectTape(0);
+					break;
+				case MouseAction.Tape1Opened:
+					ShowSelectTape(1);
+					break;
 			}
+		}
+	}
+
+	private void ShowSelectTape(int tapeDevice)
+	{
+		Tapes = _game.GetTapeEntries();
+		Tapes.SelectedDrive = tapeDevice;
+		showTapeSelector = true;
+	}
+
+	protected async Task OnTapeToLoadSelected(int tapeId)
+	{
+		showTapeSelector = false;
+		await Task.CompletedTask;
+		if(tapeId == -1)
+		{
+			return;
+		}
+
+		var tapeEntries = _game.GetTapeEntries();
+		var selectedDrive = tapeEntries.SelectedDrive;
+		tapeEntries.SetSelectedTape(tapeId);
+
+		if( tapeId == int.MaxValue)
+		{
+			tapeEntries.SelectedTape0Index = -1;
+			_game.EjectTape(selectedDrive);
+		} else
+		{
+			_game.TapeMenu(tapeId, selectedDrive);
 		}
 	}
 

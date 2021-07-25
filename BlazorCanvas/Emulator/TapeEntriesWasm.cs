@@ -10,9 +10,45 @@ namespace BlazorCanvas.Emulator
 		public List<TapeEntryWasm> _tapeEntryList;
 		public const string ResourceName = "MCMShared.tapes.";
 
+		public int SelectedTape0Index { get; set; }
+		public int SelectedTape1Index { get; set; }
+		public int SelectedDrive { get; set; }
+
 		public TapeEntriesWasm()
 		{
 			_tapeEntryList = new List<TapeEntryWasm>();
+			SelectedTape0Index = -1;
+			SelectedTape1Index = -1;
+		}
+
+		public void SetSelectedTape(int tapeId)
+		{
+			if(tapeId == int.MaxValue)
+			{
+				return;
+			}
+
+			if(SelectedDrive == 0)
+			{
+				SelectedTape0Index = tapeId;
+			} else
+			{
+				SelectedTape1Index = tapeId;
+			}
+		}
+
+		public bool Selected(int tapeId)
+		{
+			return tapeId == ((SelectedDrive == 0)
+				? SelectedTape0Index
+				: SelectedTape1Index);
+		}
+
+		public bool InOtherTape(int tapeId)
+		{
+			return tapeId == ((SelectedDrive == 0)
+				? SelectedTape1Index
+				: SelectedTape0Index);
 		}
 
 		public void AddSystemTapeEntries()
@@ -20,7 +56,7 @@ namespace BlazorCanvas.Emulator
 			_tapeEntryList.Add(EmbeddedTapeEntry(0, "demo.tp"));
 			_tapeEntryList.Add(EmbeddedTapeEntry(1, "utils.tp"));
 			_tapeEntryList.Add(EmbeddedTapeEntry(2, "empty.tp"));
-			_tapeEntryList.Add(EmbeddedTapeEntry(3, "eject", isEject: true, hasData: false));
+			//_tapeEntryList.Add(EmbeddedTapeEntry(3, "eject", isEject: true, hasData: false));
 		}
 
 		public int Add(string name, bool embedded, int[] tapeData)

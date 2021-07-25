@@ -61,6 +61,8 @@ namespace BlazorCanvas.Emulator
 			return 0;
 		}
 
+		public TapeEntriesWasm GetTapeEntries() => _tapeEntries;
+
 		public (byte[] Tape, string Name) GetTapeEntryImage(int id)
 		{
 			var te = _tapeEntries.GetById(id);

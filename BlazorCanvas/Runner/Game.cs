@@ -54,6 +54,14 @@ namespace BlazorCanvas.Runner
 		public void AddTapeEntry(string name, byte[] rawImage) =>
 			_tapes.AddTapeEntry(name, rawImage);
 
+		public TapeEntriesWasm GetTapeEntries() => _tapes.GetTapeEntries();
+
+		public void TapeMenu(int option, int tapeDevice) =>
+			_tapes.TapeMenu(option, tapeDevice);
+
+		public void EjectTape(int tapeDrive) =>
+			_tapes.EjectTape(tapeDrive);
+
 		public Game
 		(
 			InitializeWasm initialize,

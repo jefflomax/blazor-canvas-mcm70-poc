@@ -124,7 +124,7 @@ namespace MCMShared.Emulator
 				}
 
 				// CASE: open/close tape 0 lid requested
-				// CASE: open/close tape 1 lid  requested
+				// CASE: open/close tape 1 lid requested
 				if (IsTapeY(y))
 				{
 					var isLeftTape = IsLeftTapeX(x);
@@ -144,11 +144,19 @@ namespace MCMShared.Emulator
 						? new Rectangle(40, 148, 409, 256)
 						: new Rectangle(483, 148, 209, 256);
 
+#if SKIP_WASM
+					// TODO: Inheritance
+					if (tape_s.lid == 1 && isShifted)
+					{
+						return DeviceToAction(tapeDevice);
+					}
+#else
 					if (_tapes.IsEject(tapeDevice))
 					{
 						//_tapes.SubImage(40, 148, 409, 256, _tape_eo);   // display: no tape, lid opened
 						_tapes.EjectTape(tapeDevice);
 					}
+#endif
 
 					tape_s.lid = 1 - tape_s.lid;  // flip lid status 
 
@@ -158,7 +166,7 @@ namespace MCMShared.Emulator
 					if (tape_s.lid == 0)
 					{
 						//if ((tape0_s.status & 0x04) == 0)
-						if(_tapes.FinalizeTapeLoad(0))
+						if(_tapes.FinalizeTapeLoad(tapeDevice))
 						{
 							_display.SubImage(r, _tapeLc); // display: tape loaded, lid closed
 						}
@@ -179,7 +187,8 @@ namespace MCMShared.Emulator
 				}
 
 			}
-
+#if SKIP_WASM
+#else
 			else if (isPressed && button == MouseButtonSel.Right)
 			{
 				if (!IsTapeY(_lastMouseY))
@@ -204,7 +213,15 @@ namespace MCMShared.Emulator
 					}
 				}
 			}
+#endif
 			return MouseAction.None;
+		}
+
+		private MouseAction DeviceToAction(int tapeDevice)
+		{
+			return tapeDevice == 0
+				? MouseAction.Tape0Opened
+				: MouseAction.Tape1Opened;
 		}
 	}
 }

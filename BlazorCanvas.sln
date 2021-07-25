@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31306.274
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorCanvas", "BlazorCanvas\BlazorCanvas.csproj", "{C9EDE4B1-F915-435B-B610-9F5E601CF34D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMShared", "MCMShared\MCMShared.csproj", "{7FD3EDAE-74E4-45E0-9696-BA5A740FBA5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MCMShared", "MCMShared\MCMShared.csproj", "{7FD3EDAE-74E4-45E0-9696-BA5A740FBA5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

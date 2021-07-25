@@ -435,7 +435,6 @@ namespace MCMShared.Emulator
 						return false;
 					}
 
-					Console.WriteLine($"Finalize TL {_tape0IdSelected} {_tape0ToSave}");
 					LoadTape(_tape0SelectedPath, 0, _tape0IdSelected);
 					_tape0ToSave = _tape0IdSelected;
 					tape0_s.name = _tape0SelectedName;

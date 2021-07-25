@@ -12,6 +12,8 @@ namespace MCMShared.Emulator
 	{
 		None,
 		PrinterOn,
-		PrinterOff
+		PrinterOff,
+		Tape0Opened,
+		Tape1Opened
 	}
 }
