@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BlazorCanvas.Emulator;
+using BlazorCanvas.Emulator.Impl;
 using MCMShared.Emulator;
 using Microsoft.JSInterop;
 
@@ -277,9 +278,9 @@ namespace BlazorCanvas.Runner
 				: _instructionCounter;
 		}
 
-		public void Key(byte key)
+		public void Key(byte key, JsKey systemKey)
 		{
-			_keyboard.keyboard(key);
+			_keyboard.keyboard(key, systemKey);
 		}
 
 		public MouseAction EmulatorClick

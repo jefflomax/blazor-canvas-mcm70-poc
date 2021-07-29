@@ -11,4 +11,14 @@ namespace BlazorCanvas.Emulator
 		TapeLoadedClosed,
 		TapeLoadedOpened
 	}
+
+	public enum JSKeyCode
+	{
+		None = 0,
+		Space,
+		BackSpace,
+		F1,
+		F2,
+		TAB
+	}
 }

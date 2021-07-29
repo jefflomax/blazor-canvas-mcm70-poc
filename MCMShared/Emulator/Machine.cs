@@ -28,11 +28,8 @@ namespace MCMShared.Emulator
 			_mouse = null;
 			_printer = null;
 
-#if SKIP_WASM
-			McmOn = true;
-#else
 			McmOn = false;
-#endif
+
 			Power = true;
 
 			Memory = new byte[0x4000]; // 16K

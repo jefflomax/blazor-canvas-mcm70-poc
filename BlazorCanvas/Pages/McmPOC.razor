@@ -4,6 +4,7 @@
 @using BlazorCanvas.Runner
 @using BlazorCanvas.JsInterop
 @using BlazorCanvas.Emulator
+@using BlazorCanvas.Emulator.Impl
 @using System.Reflection
 @using System.IO
 @using MCMShared.Emulator
@@ -195,6 +196,8 @@
 	private static readonly int TapeLoadedOpenedWidth = 409;
 	private static readonly int TapeLoadedOpenedHeight = 256;
 
+	private static JsKey _systemKey;
+
 	private static readonly int PrinterOpsPerDisplay = 16;
 	private bool hidePrinter = true;
 	private bool imagesReady = false;
@@ -269,6 +272,9 @@
 
 		printerRedisplayCounter = 0;
 
+		_systemKey = new JsKey();
+		_systemKey.Clear();
+
 		Tapes = new BlazorCanvas.Emulator.TapeEntriesWasm();
 
 		EditContext = new EditContext(_tapeEntry);
@@ -286,6 +292,8 @@
 		KeyValues.Add("Backspace", 8);
 		KeyValues.Add("Equal", 0x3D);
 		KeyValues.Add("Tab", 9);
+		KeyValues.Add("F1", 3); // 3 is arbitrary, just like the unhandled CTRL in keyboard.cs
+		KeyValues.Add("F2", 3);
 
 		await Task.CompletedTask;
 	}
@@ -295,23 +303,23 @@
 	{
 		if( imagesReady && _game != null)
 		{
-			if( ke.Key.Length == 1 )
+			var code = ke.Code;
+			if( KeyValues.TryGetValue(code, out int key))
 			{
-				//var bytes = Encoding.ASCII.GetBytes(ke.Key);
-				_game.Key((byte)ke.Key[0]);
+				var ascii = (byte)key;
+				//Console.WriteLine($"Key: {ascii}");
+				_systemKey.Set(code, ke.CtrlKey);
+				_game.Key(ascii, _systemKey);
+				_systemKey.Clear();
 				return;
 			}
 
-			var code = ke.Code;
-			if( code.Length > 1)
+			if( ke.Key.Length == 1 )
 			{
-				if( KeyValues.TryGetValue(code, out int key))
-				{
-					var ascii = (byte)key;
-					Console.WriteLine($"Key: {ascii}");
-					_game.Key(ascii);
-					return;
-				}
+				//var bytes = Encoding.ASCII.GetBytes(ke.Key);
+				//Console.WriteLine($"Key 1B {ke.Key[0]}");
+				_game.Key((byte)ke.Key[0], _systemKey);
+				return;
 			}
 		}
 	}

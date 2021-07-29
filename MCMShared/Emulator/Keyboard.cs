@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MCMShared.Interfaces;
+using System;
 
 
 namespace MCMShared.Emulator
@@ -119,42 +120,20 @@ namespace MCMShared.Emulator
 		//public void keyboard(byte key, int x, int y)
 		public void keyboard
 		(
-			//OpenTK.Windowing.GraphicsLibraryFramework.Keys openGLKey,
-			byte ascii
-			//KeyModifiers modifiers
+			byte ascii,
+			IsKey systemKey
 		)
 		{
 			int key = ascii;
 
-			if (!KeyRequested)
-			{
-				// IO has not requested a keyboard press
-				// should the queue be emptied as well to get rid
-				// of extra presses??
-				// computer is on and key press has been requested then process it
-				Console.WriteLine("Not ready for key yet");
-				return;
-			}
-
-			KeyRequested=false;     // key will be supplied so mark request as "served"
-
-			ClearIfAllZero();
-
-			AddQ(key, repetitions: 100);
-			// end with a few 0s to emulate key up
-			AddQ(0, repetitions: 5);
-
-#if false
-			int key = ascii;
-
-			if( ascii == 0)
+			if ( ascii == 0)
 			{
 				return;
 			}
 
 			if (! _machine.Power)
 			{
-				if (openGLKey == Keys.F2)
+				if (systemKey.IsF2() /*openGLKey == Keys.F2*/)
 				{
 					_machine.Power = true; // simulates restouring power
 					Console.WriteLine("Power restore simulated, press START (TAB)");
@@ -163,7 +142,7 @@ namespace MCMShared.Emulator
 			}
 
 			// if TAB is pressed for the first time, then start computer
-			if ((openGLKey == Keys.Tab) && (! _machine.McmOn))
+			if ((systemKey.IsTab()/*openGLKey == Keys.Tab*/) && (! _machine.McmOn))
 			{
 				_machine.McmOn=true; // power CPU
 
@@ -208,23 +187,25 @@ namespace MCMShared.Emulator
 				key =3;            // key code 3 is selected an an arbitrary way
 				}
 #endif
-			if (modifiers.HasFlag(KeyModifiers.Control))
+			if (systemKey.HasCtrlModifier() /*modifiers.HasFlag(KeyModifiers.Control)*/)
 			{
-				switch (openGLKey)
+				if( systemKey.IsSpace())
 				{
-				case Keys.Space: // CTRL + space = insert char; note CTRL+ space gives ascii code 0
-					key=2;
-					break;		// key code 2 is selected arbitrarily
-				case Keys.Backspace: // CTRL + BSP = delete char; note CTRL+ space gives ascii code 8 the same as for BSP
-					key=127;
-					break;  // key-code 127 is selected to match DEL key on a standard keyboard  
-				default: // CTRL and any alphanumeric key are pressed 
-					key =3;		// key code 3 is selected an an arbitrary way
-					break;
+					key=2; // CTRL + space = insert char; note CTRL+ space gives ascii code 0
+					// key code 2 is selected arbitrarily
+				}
+				else if (systemKey.IsBackspace())
+				{
+					key=127;// CTRL + BSP = delete char; note CTRL+ space gives ascii code 8 the same as for BSP
+					// key-code 127 is selected to match DEL key on a standard keyboard
+				}
+				else
+				{
+					key =3;     // key code 3 is selected an an arbitrary way
 				}
 			}
 
-			if (openGLKey == Keys.F1)
+			if (systemKey.IsF1() /* openGLKey == Keys.F1*/)
 			{
 				_machine.Power = false;	// simulates power failure
 				Console.WriteLine("Power failure simulated, press F2 to restore");
@@ -241,7 +222,6 @@ namespace MCMShared.Emulator
 			AddQ(key, repetitions:100);
 			// end with a few 0s to emulate key up
 			AddQ(0,repetitions:5);
-#endif
 		}
 
 
