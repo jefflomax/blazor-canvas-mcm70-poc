@@ -12,10 +12,18 @@
 @inject HttpClient Http
 @inject ILogger<McmPOC> Logger
 @inject AppState AppState
-@*  @inject ILoggerFactory LoggerFactory *@
+@* @inject ILoggerFactory LoggerFactory *@
 
 <div class="container">
 <div class="row">
+<input id="iosSafari"
+	disabled="@iosCheckBox"
+	hidden="@iosCheckBox"
+	width="10"
+	@onkeydown="CanvasOnKeypressIOS"
+	@bind-value="iosInput"
+	@bind-value:event="oninput"
+	@ref="_iosInput"/>
 
 @* Tried BECanvas, but it is well out of date and provided no real value *@
 @* To get the keydown event, need tabindex 0 and focus *@
@@ -55,7 +63,12 @@
 	id="startit"
 	type="button"
 	title="Start"
-	@onclick="StartEmulator">Start Emulator</button>
+	@onclick="StartEmulator">Start Emulator</button> Uncheck for IOS hack
+<input
+	id="iosCheckBox"
+	type="checkbox"
+	@bind="@iosCheckBox"
+	@ref="_iosCheckBox"/>
 @*
 <button
 	id="doit"
@@ -189,6 +202,9 @@
 	protected ElementReference _tapeLoadedOpenedImgRef;
 	protected ElementReference _tapeLoadedClosed;
 
+	protected ElementReference _iosCheckBox;
+	protected ElementReference _iosInput;
+
 	private static readonly int EmulatorWidth = 932; // emulator window's width
 	private static readonly int EmulatorHeight = 722;
 	private static readonly int PrinterWidth = 944;
@@ -211,6 +227,9 @@
 
 	private bool showTapeSelector = false;
 	public BlazorCanvas.Emulator.TapeEntriesWasm Tapes { get; set; } = null;
+
+	private bool iosCheckBox { get; set; } = true;
+	private string iosInput { get; set; } = string.Empty;
 
 	[JSInvokable]
 	public async ValueTask<int> GameLoop(double time)
@@ -296,6 +315,19 @@
 		KeyValues.Add("F2", 3);
 
 		await Task.CompletedTask;
+	}
+
+	private static bool iosFirstKey = true;
+	private void CanvasOnKeypressIOS(KeyboardEventArgs ke)
+	{
+		if (iosFirstKey)
+		{
+			iosFirstKey = false;
+			ke.Code = "Tab"; // Will also need TAB after F2 ?
+			ke.CtrlKey = false;
+		}
+		CanvasOnKeypress(ke);
+		iosInput = string.Empty;
 	}
 
 
