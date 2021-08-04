@@ -29,22 +29,35 @@ namespace MCMShared.Emulator
 		public AplFont[] AplFonts { get; set; }
 
 		protected Assembly _assembly;
+		protected Assembly _sharedAssembly;
+		protected Assembly _dataAssembly;
+
+		public Assembly GetSharedAssembly() => _sharedAssembly;
 
 		public Initialize()
 		{
 			_assembly = null;
+			_sharedAssembly = null;
+			_dataAssembly = null;
 		}
 
-		public virtual void SetAssembly(Assembly assembly)
+		public virtual void SetAssembly
+		(
+			Assembly assembly,
+			Assembly sharedAssembly,
+			Assembly dataAssembly
+		)
 		{
 			_assembly = assembly;
+			_sharedAssembly = sharedAssembly;
+			_dataAssembly = dataAssembly;
 		}
 
 		public void InitAll()
 		{
 			InitRoms();
 			InitFonts();
-			InitImages(_assembly);
+			InitImages();
 		}
 
 		public void InitRoms()
@@ -57,39 +70,32 @@ namespace MCMShared.Emulator
 		{
 		}
 
+		protected byte[] ReadFonts()
+		{
+			var fonts = ReadImageResource(_sharedAssembly, "MCMShared.APL_F.apl_fonts.data");
+			return fonts;
+		}
+
 		public virtual void InitRom6K()
 		{
+			Rom6k = new byte[0x1800]; //6144
+			ReadResource(_sharedAssembly, @"MCMShared.ROM.ROM6k", Rom6k);
 		}
 
 		public virtual void InitRom()
 		{
-		}
-#if false
-		public void InitAll()
-		{
-			var assembly = typeof(Program).GetTypeInfo().Assembly;
-
-			InitRoms(assembly);
-			InitImages(assembly);
-		}
-
-		private void InitRoms(Assembly assembly)
-		{
-			Rom6k = new byte[0x1800]; //6144
-			ReadResource(assembly, @"MCM70.ROM.ROM6k", Rom6k);
-
 			Rom = new byte[0x8000];
-			ReadResource(assembly, @"MCM70.ROM.ROMs0-C", Rom);
+			ReadResource(_sharedAssembly, @"MCMShared.ROM.ROMs0-C", Rom);
 		}
-#endif
 
 		protected void ReadResource
 		(
+			Assembly assembly,
 			string resourceName,
 			byte[] data
 		)
 		{
-			using var stream = _assembly.GetManifestResourceStream(resourceName);
+			using var stream = assembly.GetManifestResourceStream(resourceName);
 			if (stream == null)
 			{
 				return;
@@ -143,48 +149,35 @@ namespace MCMShared.Emulator
 				: ch - 'A' + 10;
 		}
 
-		protected virtual void InitImages(Assembly assembly)
+		protected virtual void InitImages()
 		{
-			Panel = ReadImageResource(assembly, "MCM70.images.panel.data");
+
+			Panel = ReadImageResource(_dataAssembly, "MCMData.images.panel.data");
 
 			//------------- read tape images ------------------------
-			TapeEO = ReadImageResource(assembly, "MCM70.images.tape_empty_opened.data");
+			TapeEO = ReadImageResource(_dataAssembly, "MCMData.images.tape_empty_opened.data");
 
-			TapeEC = ReadImageResource(assembly, "MCM70.images.tape_empty_closed.data");
+			TapeEC = ReadImageResource(_dataAssembly, "MCMData.images.tape_empty_closed.data");
 
-			TapeLO = ReadImageResource(assembly, "MCM70.images.tape_loaded_opened.data");
+			TapeLO = ReadImageResource(_dataAssembly, "MCMData.images.tape_loaded_opened.data");
 
-			TapeLC = ReadImageResource(assembly, "MCM70.images.tape_loaded_closed.data");
+			TapeLC = ReadImageResource(_dataAssembly, "MCMData.images.tape_loaded_closed.data");
 
-			SpinLeft = ReadImageResource(assembly, "MCM70.images.spin_left.data");
+			SpinLeft = ReadImageResource(_dataAssembly, "MCMData.images.spin_left.data");
 
-			SpinRight = ReadImageResource(assembly, "MCM70.images.spin_left.data");
+			SpinRight = ReadImageResource(_dataAssembly, "MCMData.images.spin_left.data");
 
-			SpinStop = ReadImageResource(assembly, "MCM70.images.spin_stop.data");
+			SpinStop = ReadImageResource(_dataAssembly, "MCMData.images.spin_stop.data");
 
 
 			// read printer's image
-			PrinterWin = ReadImageResource(assembly, "MCM70.images.printer.data");
+			PrinterWin = ReadImageResource(_dataAssembly, "MCMData.images.printer.data");
 
 			// read printer's error "on" image
-			PrErrorOn = ReadImageResource(assembly, "MCM70.images.pr_error_on.data");
+			PrErrorOn = ReadImageResource(_dataAssembly, "MCMData.images.pr_error_on.data");
 
 			// read printer's error "off" image
-			PrErrorOff = ReadImageResource(assembly, "MCM70.images.pr_error_off.data");
-
-
-			var fonts = ReadImageResource(assembly, "MCM70.APL_F.apl_fonts.data");
-			AplFonts = new AplFont[12];
-			var b = 0;
-			for (var i = 0; i < AplFonts.Length; i++)
-			{
-				var font = new byte[3888];
-				for (var j = 0; j < 3888; j++)
-				{
-					font[j] = fonts[b++];
-				}
-				AplFonts[i].Font = font;
-			}
+			PrErrorOff = ReadImageResource(_dataAssembly, "MCMData.images.pr_error_off.data");
 		}
 
 		private static byte[] ReadImageResource
@@ -202,7 +195,7 @@ namespace MCMShared.Emulator
 			return binaryReader.ReadBytes((int)stream.Length);
 		}
 
-		public void ProcessFonts(byte[] fonts)
+		protected void ProcessFonts(byte[] fonts)
 		{
 			AplFonts = new AplFont[12];
 			var b = 0;

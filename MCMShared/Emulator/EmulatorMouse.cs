@@ -75,6 +75,7 @@ namespace MCMShared.Emulator
 		{
 			var x = (int) fx;
 			var y = (int) fy;
+			MouseAction mouseAction;
 			_lastMouseX = x;
 			_lastMouseY = y;
 
@@ -142,21 +143,27 @@ namespace MCMShared.Emulator
 						: _tapes.tape1_s;
 					var r = (isLeftTape)
 						? new Rectangle(40, 148, 409, 256)
-						: new Rectangle(483, 148, 209, 256);
+						: new Rectangle(483, 148, 409, 256);
 
-#if SKIP_WASM
-					// TODO: Inheritance
-					if (tape_s.lid == 1 && isShifted)
+					// Not really what OO is good for, sometimes conditional
+					// compilation is easier.  This allows the WASM code
+					// with a different code flow to work.
+					if(ReturnForShiftClick
+						(
+							tape_s,
+							tapeDevice,
+							isShifted,
+							out mouseAction
+						))
 					{
-						return DeviceToAction(tapeDevice);
+						return mouseAction;
 					}
-#else
+
 					if (_tapes.IsEject(tapeDevice))
 					{
 						//_tapes.SubImage(40, 148, 409, 256, _tape_eo);   // display: no tape, lid opened
 						_tapes.EjectTape(tapeDevice);
 					}
-#endif
 
 					tape_s.lid = 1 - tape_s.lid;  // flip lid status 
 
@@ -187,8 +194,7 @@ namespace MCMShared.Emulator
 				}
 
 			}
-#if SKIP_WASM
-#else
+			// This is unreachable by WASM
 			else if (isPressed && button == MouseButtonSel.Right)
 			{
 				if (!IsTapeY(_lastMouseY))
@@ -213,15 +219,19 @@ namespace MCMShared.Emulator
 					}
 				}
 			}
-#endif
 			return MouseAction.None;
 		}
 
-		private MouseAction DeviceToAction(int tapeDevice)
+		protected virtual bool ReturnForShiftClick
+		(
+			TP tape_s,
+			int tapeDevice,
+			bool isShifted,
+			out MouseAction returnAction
+		)
 		{
-			return tapeDevice == 0
-				? MouseAction.Tape0Opened
-				: MouseAction.Tape1Opened;
+			returnAction = MouseAction.None;
+			return false;
 		}
 	}
 }

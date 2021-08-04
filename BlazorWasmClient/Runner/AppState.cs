@@ -27,7 +27,6 @@ namespace BlazorWasmClient.Runner
 			NotifyStateChanged();
 		}
 
-
 		public void SetInstructionCount(long ic)
 		{
 			InstructionCount = ic.ToString("X");

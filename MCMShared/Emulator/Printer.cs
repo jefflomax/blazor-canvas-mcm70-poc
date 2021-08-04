@@ -8,7 +8,7 @@ namespace MCMShared.Emulator
 
 		public const int p_width = 944;				// printer window's width
 		public const int p_height = 700;			// printer window's height
-		protected const int  head_Y =  629;			// Y-coordinate of printer's head
+		protected const int head_Y =  629;			// Y-coordinate of printer's head
 		private const int left_mar = 64;			// head's leftmost x coordinate
 		public const int page_start = 560;			// y-coordinate of the top left corner of page, when page is initialized
 		public const int page_bottom = 626;			// y-coordinate of the bottom of visible page
@@ -20,22 +20,22 @@ namespace MCMShared.Emulator
 		public bool Redisplay;
 
 		public readonly byte[] _printerWindow;
-		public readonly AplFont[] _aplFonts;
+		private readonly AplFont[] _aplFonts;
 		private readonly byte[] _pr_error_off;
 		private readonly byte[] _pr_error_on;
 
 		private bool _printerConnected ;
 		// true, if printer is connected to Omniport
 		public bool PrinterConnected => _printerConnected;
-		public byte pr_status = 241;			// printer status initialized to 241 -- everything OK
-												//  pr_status[7] - paper feed ready
-												//  pr_status[6] - carriage ready
-												//  pr_status[5] - character print ready 
-												//  pr_status[4] - ribbon up
-												//  pr_status[3] - ribbon red
-												//  pr_status[2] - paper out
-												//  pr_status[1] - check condition (carriage motion)
-												//  pr_status[0] - printer powered and ready  
+		public byte pr_status = 241;		// printer status initialized to 241 -- everything OK
+											//  pr_status[7] - paper feed ready
+											//  pr_status[6] - carriage ready
+											//  pr_status[5] - character print ready 
+											//  pr_status[4] - ribbon up
+											//  pr_status[3] - ribbon red
+											//  pr_status[2] - paper out
+											//  pr_status[1] - check condition (carriage motion)
+											//  pr_status[0] - printer powered and ready  
 
 		public byte pr_data = 0;			// this variable holds 8 ls bits of a 16-bit printer command;
 											// the value is assigned by OUT 0B instruction
@@ -190,10 +190,8 @@ namespace MCMShared.Emulator
 				 take effect
 		---------------------------------------------------------------------------------------------*/
 
-		private void PrinterError()
+		protected virtual void PrinterError()
 		{
-#if SKIP_WASM
-#else
 			int m;
 
 			var n = ((p_width * 656) + 491) * 3;
@@ -201,13 +199,10 @@ namespace MCMShared.Emulator
 			for (m = 0; m < 24; m++)		// image height=24
 			{
 				//memcpy(&printer_win[n], &pr_error_on[m * 156], 156);
-				for (var i = 0; i < 156; i++)
-				{
-					_printerWindow[n + i] = _pr_error_on[m * 156 + i];
-				}
+				Array.Copy(_pr_error_on, m * 156, _printerWindow, n, 156);
+
 				n = n + 2832;				// offset to the next pixel line of image p_width=944
 			}
-#endif
 		}
 
 
@@ -215,10 +210,8 @@ namespace MCMShared.Emulator
 		// display printer error_on button
 		//---------------------------------------------------------------------------------------------
 
-		private void PrinterRestore()
+		protected virtual void PrinterRestore()
 		{
-#if SKIP_WASM
-#else
 			int m;
 
 			var n = ((p_width * 656) + 491) * 3;
@@ -226,14 +219,10 @@ namespace MCMShared.Emulator
 			for (m = 0; m < 24; m++)			// image height=24
 			{
 				//memcpy(&printer_win[n], &pr_error_off[m * 156], 156);
-				for (var i = 0; i < 156; i++)
-				{
-					_printerWindow[n + i] = _pr_error_off[m * 156 + i];
-				}
+				Array.Copy(_pr_error_off, m * 156, _printerWindow, n, 156);
 
 				n += 2832;						// offset to the next pixel line of image p_width=944
 			}
-#endif
 		}
 
 		/*-----------------------------------------------------------------------------------------
@@ -253,10 +242,13 @@ namespace MCMShared.Emulator
 			for (y1 = 0; y1 < h; y1++)
 			{
 				s1 = 3 * (s + (y1 * p_width));
+#if false
 				for (x1 = 0; x1 < d; x1++)
 				{
 					_printerWindow[s1 + x1] = (byte)c;	// modify printer's texture
 				}
+#endif
+				Array.Fill(_printerWindow, (byte)c, s1, d);
 			}
 		}
 

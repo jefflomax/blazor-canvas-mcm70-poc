@@ -9,7 +9,9 @@ namespace BlazorWasmClient.Emulator
 		TapeEmptyClosed,
 		TapeEmptyOpened,
 		TapeLoadedClosed,
-		TapeLoadedOpened
+		TapeLoadedOpened,
+		PrinterErrorOn,
+		PrinterErrorOff
 	}
 
 	public enum JSKeyCode

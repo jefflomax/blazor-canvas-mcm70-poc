@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using System.Reflection;
 using MCMShared.Emulator;
 
-namespace BlazorWasmClient.Emulator
+namespace MCM70Client.Emulator
 {
 	public class InitializeDotNet : Initialize
 	{
-		public override void SetAssembly(Assembly assembly)
+		public override void InitFonts()
 		{
-			_assembly = assembly;
-		}
-
-		public override void InitRom6K()
-		{
-
+			byte[] fonts = ReadFonts();
+			ProcessFonts(fonts);
 		}
 	}
 }

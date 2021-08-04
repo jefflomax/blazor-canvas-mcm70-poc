@@ -133,7 +133,7 @@ namespace MCMShared.Emulator
 
 			if (! _machine.Power)
 			{
-				if (systemKey.IsF2() /*openGLKey == Keys.F2*/)
+				if (systemKey.IsF2())
 				{
 					_machine.Power = true; // simulates restouring power
 					Console.WriteLine("Power restore simulated, press START (TAB)");
@@ -142,7 +142,7 @@ namespace MCMShared.Emulator
 			}
 
 			// if TAB is pressed for the first time, then start computer
-			if ((systemKey.IsTab()/*openGLKey == Keys.Tab*/) && (! _machine.McmOn))
+			if ((systemKey.IsTab()) && (! _machine.McmOn))
 			{
 				_machine.McmOn=true; // power CPU
 
@@ -187,7 +187,7 @@ namespace MCMShared.Emulator
 				key =3;            // key code 3 is selected an an arbitrary way
 				}
 #endif
-			if (systemKey.HasCtrlModifier() /*modifiers.HasFlag(KeyModifiers.Control)*/)
+			if (systemKey.HasCtrlModifier())
 			{
 				if( systemKey.IsSpace())
 				{
@@ -205,7 +205,7 @@ namespace MCMShared.Emulator
 				}
 			}
 
-			if (systemKey.IsF1() /* openGLKey == Keys.F1*/)
+			if (systemKey.IsF1())
 			{
 				_machine.Power = false;	// simulates power failure
 				Console.WriteLine("Power failure simulated, press F2 to restore");

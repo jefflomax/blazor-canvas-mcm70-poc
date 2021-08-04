@@ -116,6 +116,11 @@ namespace BlazorWasmClient.Emulator
 			return te.GetName();
 		}
 
+		public override bool IsEject(int tapeDrive)
+		{
+			return false;
+		}
+
 		// Right now, only eject saves a tape, and only the most
 		// recent
 		protected override void SaveTape(string s, int id, int tapeEntryId)
@@ -237,6 +242,8 @@ namespace BlazorWasmClient.Emulator
 			_tapeEntries.Add(name, embedded: false, tapeData);
 		}
 
+		// Add NuGet package Microsoft.Extensions.FileProviders.Embedded
+		// Set Build Action to Embedded Resource
 		private StreamReader LoadEmbeddedResource
 		(
 			string name

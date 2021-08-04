@@ -40,7 +40,6 @@ $skip = $false
         {
             $width = 52
             $height = 24
-            $skip = $true 
         }
     }
 

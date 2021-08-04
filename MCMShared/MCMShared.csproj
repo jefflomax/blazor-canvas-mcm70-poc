@@ -5,14 +5,17 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants)TRACE;SKIP_WASM</DefineConstants>
+    <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>$(DefineConstants)TRACE;SKIP_WASM</DefineConstants>
+    <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="APL_F\apl_fonts.data" />
+    <None Remove="ROM\ROM6k" />
+    <None Remove="ROM\ROMs0-C" />
     <None Remove="tapes\demo.tp" />
     <None Remove="tapes\eject" />
     <None Remove="tapes\empty.tp" />
@@ -20,6 +23,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="APL_F\apl_fonts.data">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ROM\ROMs0-C">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ROM\ROM6k">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="tapes\demo.tp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

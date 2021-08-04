@@ -17,6 +17,7 @@
 		public static string clearSsUnm => $"{ns}clearSsUnm";
 		public static string dspAplPrinterOperations => $"{ns}dspAplPrinterOperations";
 		public static string drawImageUnm => $"{ns}drawImageUnm";
+		public static string drawPrinterImageUnm => $"{ns}drawPrinterImageUnm";
 		public static string dspAplCassette => $"{ns}dspAplCassette";
 		public static string downloadFileUnm => $"{ns}downloadFileUnm";
 

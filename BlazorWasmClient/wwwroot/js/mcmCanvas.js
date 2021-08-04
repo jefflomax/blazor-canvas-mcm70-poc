@@ -6,7 +6,6 @@ var Mcm70JSInterop;
     const Width = 932;
     // https://www.meziantou.net/optimizing-js-interop-in-a-blazor-webassembly-application.htm
     // https://github.com/mono/mono/blob/b6ef72c244bd33623d231ff05bc3d120ad36b4e9/sdks/wasm/src/binding_support.js
-    // https://www.meziantou.net/optimizing-js-interop-in-a-blazor-webassembly-application.htm
     // https://github.com/majda107/blaze-cards/blob/3f3f7069100d2d4a6451a3498490eaf45887d150/BlazeCardsCore/wwwroot/blaze-cards/cards.js#L26
     class Point {
         constructor(x, y) {
@@ -82,10 +81,28 @@ var Mcm70JSInterop;
             this.drawImageUnm = (sourceId, dx, dy) => {
                 const imgId = this.monoBinding.conv_string(sourceId);
                 const elementRef = document.getElementById(imgId);
-                const canvasElement = document.getElementById("emulator");
+                //const canvasElement = document.getElementById("emulator") as HTMLCanvasElement;
+                //const context = canvasElement.getContext('2d');
+                //context.drawImage(elementRef, dx, dy);
+                this.drawImage(elementRef, "emulator", dx, dy);
+                return 0;
+            };
+            /**
+             * Draw image to printer canvas at dx,dy unmarshalled
+             * @param sourceId
+             * @param dx
+             * @param dy
+             */
+            this.drawPrinterImageUnm = (sourceId, dx, dy) => {
+                const imgId = this.monoBinding.conv_string(sourceId);
+                const elementRef = document.getElementById(imgId);
+                this.drawImage(elementRef, "printer", dx, dy);
+                return 0;
+            };
+            this.drawImage = (elementRef, destId, dx, dy) => {
+                const canvasElement = document.getElementById(destId);
                 const context = canvasElement.getContext('2d');
                 context.drawImage(elementRef, dx, dy);
-                return 0;
             };
             /**
              * Refresh Self-Scan display unmarshalled

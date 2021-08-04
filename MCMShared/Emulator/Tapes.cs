@@ -475,7 +475,7 @@ namespace MCMShared.Emulator
 			return false;
 		}
 
-		public bool IsEject(int tapeDrive)
+		public virtual bool IsEject(int tapeDrive)
 		{
 			switch (tapeDrive)
 			{

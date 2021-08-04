@@ -60,6 +60,7 @@
 
 </div>
 
+<div style="margin:10px;">
 <button
 	id="startit"
 	type="button"
@@ -71,6 +72,7 @@ Check for IOS keyboard
 	type="checkbox"
 	@bind="@IosCheckBoxEnabled"
 	@ref="_iosCheckBox"/>
+</div>
 @*
 <button
 	id="doit"
@@ -139,6 +141,17 @@ Check for IOS keyboard
 	hidden
 	title="tape loaded closed"
 	@ref="_tapeLoadedClosed"/>
+<img id="@ImagesWasm.PrinterErrorOn.Str()"
+	src="images/pr_error_on.png"
+	hidden
+	title="printer error on"
+	@ref="_printerErrorOnImgRef"/>
+<img id="@ImagesWasm.PrinterErrorOff.Str()"
+	src="images/pr_error_off.png"
+	hidden
+	title="printer error off"
+	@ref="_printerErrorOnImgRef"/>
+
 @* This takes advantage of drawImage taking a CanvasImageSource *@
 @* So we can pass it a IMG or CANVAS and it works just the same *@
 @* To display the label on the cassette, the loaded opened image *@
@@ -203,6 +216,8 @@ Check for IOS keyboard
 	protected ElementReference _tapeEmptyOpened;
 	protected ElementReference _tapeLoadedOpenedImgRef;
 	protected ElementReference _tapeLoadedClosed;
+	protected ElementReference _printerErrorOnImgRef;
+	protected ElementReference _printerErrorOffImgRef;
 
 	protected ElementReference _iosCheckBox;
 	protected ElementReference _iosInput;
@@ -355,15 +370,6 @@ Check for IOS keyboard
 				ke.Code = "F2";
 			}
 		}
-/*
-		KeyLast1 = KeyLast2;
-		KeyLast2 = KeyLast3;
-		KeyLast3 = KeyLast4;
-		var conv = ke.Key.Length > 0
-			? (byte)ke.Key[0]
-			: (byte)255;
-		KeyLast4 = $"{ke.Code} '{ke.Key}' {conv} ";
-*/
 		CanvasOnKeypress(ke);
 		iosInput = string.Empty;
 	}
@@ -558,9 +564,14 @@ Check for IOS keyboard
 		// https://stackoverflow.com/questions/61321942/efficient-way-of-painting-html-canvas-image-by-pixels-using-blazor-client-side
 
 		var assembly = this.GetType().Assembly;
+		var sharedAssembly = new AplFont().GetType().Assembly;
 		// TODO: and MCMShared assembly
 
-		var initialize = LoadEmbeddedResourcesBlazorWebAssembly(assembly);
+		var initialize = LoadEmbeddedResourcesBlazorWebAssembly
+		(
+			assembly,
+			sharedAssembly
+		);
 
 		// Ctor runs too soon to capture mono binding
 		await iJsRuntime.InvokeAsync<string>(JSMethod.initialize);
@@ -582,11 +593,12 @@ Check for IOS keyboard
 	// Set Build Action to Embedded Resource
 	private InitializeWasm LoadEmbeddedResourcesBlazorWebAssembly
 	(
-		System.Reflection.Assembly assembly
+		System.Reflection.Assembly assembly,
+		System.Reflection.Assembly sharedAssembly
 	)
 	{
 		var initialize = new InitializeWasm();
-		initialize.SetAssembly(assembly);
+		initialize.SetAssembly(assembly, sharedAssembly, null);
 		initialize.InitAll();
 		return initialize;
 	}

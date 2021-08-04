@@ -56,7 +56,6 @@ namespace BlazorWasmClient.Emulator
 			_tapeEntryList.Add(EmbeddedTapeEntry(0, "demo.tp"));
 			_tapeEntryList.Add(EmbeddedTapeEntry(1, "utils.tp"));
 			_tapeEntryList.Add(EmbeddedTapeEntry(2, "empty.tp"));
-			//_tapeEntryList.Add(EmbeddedTapeEntry(3, "eject", isEject: true, hasData: false));
 		}
 
 		public int Add(string name, bool embedded, int[] tapeData)

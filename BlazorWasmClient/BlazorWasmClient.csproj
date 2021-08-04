@@ -5,30 +5,13 @@
     <TypeScriptToolsVersion>4.2</TypeScriptToolsVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Remove="wwwroot\images\panel.data" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Shared\APL_F\apl_fonts.data" />
-    <None Remove="Shared\ROM\ROM6k" />
-    <None Remove="Shared\ROM\ROMs0-C" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Shared\APL_F\apl_fonts.data">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Shared\ROM\ROM6k">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Shared\ROM\ROMs0-C">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="wwwroot\images\panel.data">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.5" />
@@ -43,16 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MCMShared\MCMShared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\tapes\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="wwwroot\tapes\demo.tp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
 </Project>

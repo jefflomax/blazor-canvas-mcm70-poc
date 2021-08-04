@@ -1,11 +1,10 @@
-﻿#if false
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using MCMShared.Emulator;
 
-namespace BlazorWasmClient.Emulator
+namespace MCM70Client.Emulator
 {
 	public class TapesDotNet : Tapes
 	{
@@ -57,4 +56,3 @@ namespace BlazorWasmClient.Emulator
 
 	}
 }
-#endif

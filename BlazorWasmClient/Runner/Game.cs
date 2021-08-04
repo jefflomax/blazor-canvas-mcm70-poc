@@ -98,7 +98,8 @@ namespace BlazorWasmClient.Runner
 			(
 				emulatorData.AplFonts,
 				emulatorData.PrErrorOff,
-				emulatorData.PrErrorOn
+				emulatorData.PrErrorOn,
+				_iJSUnmarshalledRuntime
 			);
 			_machine.AddPrinter(_printer);
 
@@ -129,13 +130,13 @@ namespace BlazorWasmClient.Runner
 				emulatorData.AplFonts,
 				_iJSUnmarshalledRuntime,
 				// Assembly w/Tape image resources
-				emulatorData.AplFonts[0].GetType().Assembly,
+				emulatorData.GetSharedAssembly(),
 				emulatorData.AllFonts,
 				ChangedAppState
 			);
 			_machine.AddTapes(_tapes);
 
-			var emulatorMouse = new EmulatorMouse
+			var emulatorMouse = new EmulatorMouseWasm
 			(
 				emulatorData.TapeLC,
 				emulatorData.TapeEC,
