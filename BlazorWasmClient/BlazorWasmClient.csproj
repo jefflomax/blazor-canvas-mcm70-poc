@@ -28,4 +28,8 @@
     <ProjectReference Include="..\MCMShared\MCMShared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\docs\" />
+  </ItemGroup>
+
 </Project>
