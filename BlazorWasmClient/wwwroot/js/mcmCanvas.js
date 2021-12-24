@@ -81,9 +81,6 @@ var Mcm70JSInterop;
             this.drawImageUnm = (sourceId, dx, dy) => {
                 const imgId = this.monoBinding.conv_string(sourceId);
                 const elementRef = document.getElementById(imgId);
-                //const canvasElement = document.getElementById("emulator") as HTMLCanvasElement;
-                //const context = canvasElement.getContext('2d');
-                //context.drawImage(elementRef, dx, dy);
                 this.drawImage(elementRef, "emulator", dx, dy);
                 return 0;
             };

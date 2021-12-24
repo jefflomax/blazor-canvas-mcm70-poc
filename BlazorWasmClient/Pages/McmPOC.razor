@@ -14,7 +14,6 @@
 @inject AppState AppState
 @* @inject ILoggerFactory LoggerFactory *@
 
-@KeyLast1 @KeyLast2 @KeyLast3 @KeyLast4
 <div class="container">
 <div class="row">
 <input id="iosSafari"
@@ -25,6 +24,22 @@
 	@bind-value="iosInput"
 	@bind-value:event="oninput"
 	@ref="_iosInput"/>
+
+<div style="margin:10px;" hidden="@hideStartButton">
+<button
+	id="startit"
+	type="button"
+	title="Start"
+	hidden="@hideStartButton"
+	@onclick="StartEmulator">Start Emulator</button>
+Check for IOS keyboard
+<input
+	id="iosCheckBox"
+	type="checkbox"
+	hidden="@hideStartButton"
+	@bind="@IosCheckBoxEnabled"
+	@ref="_iosCheckBox"/>
+</div>
 
 @* Tried BECanvas, but it is well out of date and provided no real value *@
 @* To get the keydown event, need tabindex 0 and focus *@
@@ -60,19 +75,7 @@
 
 </div>
 
-<div style="margin:10px;">
-<button
-	id="startit"
-	type="button"
-	title="Start"
-	@onclick="StartEmulator">Start Emulator</button>
-Check for IOS keyboard
-<input
-	id="iosCheckBox"
-	type="checkbox"
-	@bind="@IosCheckBoxEnabled"
-	@ref="_iosCheckBox"/>
-</div>
+
 @*
 <button
 	id="doit"
@@ -232,6 +235,7 @@ Check for IOS keyboard
 	private static JsKey _systemKey;
 
 	private static readonly int PrinterOpsPerDisplay = 16;
+	private bool hideStartButton = false;
 	private bool hidePrinter = true;
 	private bool imagesReady = false;
 	private Game _game = null;
@@ -248,11 +252,6 @@ Check for IOS keyboard
 	private bool IosCheckBoxDisabled { get { return !IosCheckBoxEnabled; } }
 	private bool IosCheckBoxEnabled { get; set; } = false;
 	private string iosInput { get; set; } = string.Empty;
-
-	private string KeyLast1 = string.Empty;
-	private string KeyLast2 = string.Empty;
-	private string KeyLast3 = string.Empty;
-	private string KeyLast4 = string.Empty;
 
 
 	[JSInvokable]
@@ -333,7 +332,7 @@ Check for IOS keyboard
 		KeyValues.Add("Space", 32);
 		KeyValues.Add("Enter", 13);
 		KeyValues.Add("Backspace", 8);
-		KeyValues.Add("Equal", 0x3D);
+		KeyValues.Add("Equal", 61); // Caused issue for divide
 		KeyValues.Add("Tab", 9);
 		KeyValues.Add("F1", 3); // 3 is arbitrary, just like the unhandled CTRL in keyboard.cs
 		KeyValues.Add("F2", 3);
@@ -380,11 +379,19 @@ Check for IOS keyboard
 		if( imagesReady && _game != null)
 		{
 			var code = ke.Code;
+
 			if( KeyValues.TryGetValue(code, out int key))
 			{
 				var ascii = (byte)key;
-				//Console.WriteLine($"Key: {ascii}");
+				// Shift is normally handled as a part of the ascii below,
+				// but for shift Equal (APL divide) we need to pass +
+				if( code == "Equal" && ke.ShiftKey)
+				{
+					ascii = (byte)'+';
+				}
+
 				_systemKey.Set(code, ke.CtrlKey);
+				//Console.WriteLine($"Key: {ascii} {ke.CtrlKey}");
 				_game.Key(ascii, _systemKey);
 				_systemKey.Clear();
 				return;
@@ -392,8 +399,8 @@ Check for IOS keyboard
 
 			if( ke.Key.Length == 1 )
 			{
-				//var bytes = Encoding.ASCII.GetBytes(ke.Key);
-				//Console.WriteLine($"Key 1B {ke.Key[0]}");
+				var bytes = Encoding.ASCII.GetBytes(ke.Key);
+				//Console.WriteLine($"K1 {ke.Key[0]}");
 				_game.Key((byte)ke.Key[0], _systemKey);
 				return;
 			}
@@ -526,6 +533,7 @@ Check for IOS keyboard
 			JSMethod.startGameLoop,
 			DotNetObjectReference.Create(this)
 		);
+		hideStartButton = true;
 		await _emulatorCanvasRef.FocusAsync();
 	}
 

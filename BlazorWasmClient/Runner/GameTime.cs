@@ -6,51 +6,60 @@ using System.Diagnostics;
 
 namespace BlazorWasmClient.Runner
 {
-    public class GameTime
-    {
-        private readonly Stopwatch _stopwatch = new Stopwatch();
+	public class GameTime
+	{
+		private readonly Stopwatch _stopwatch;
+		private readonly float _ticksInSixtiethOfASecond;
+		public readonly int InstructionsPerFrame = 1090; // Until we have timing
+		private readonly int _maxInstructionsPerFrame = 1500;
 
-        private long _lastTick = 0;
-        private long _elapsedTicks = 0;
-        private long _elapsedMilliseconds = 0;
-        private long _lastMilliseconds = 0;
+		private long _lastTick = 0;
+		private long _elapsedTicks = 0;
 
-        public void Start()
-        {
-            _stopwatch.Reset();
-            _stopwatch.Start();
+		// Intel 8008 clock speed 500Mhz
+		// 500,000,000 cycles per second
+		// 1ms = 1 / 1000 of a second
+		// 1tick = 1 / 10000000 of a second
+		// We need exact cycles/instruction which we don't have yet
+		// In order to compute 0.7 / iota 255 in 50 seconds,
+		// we need to execute around 65000 instructions per second
 
-            _lastTick = 0;
-            _lastMilliseconds = 0;
-        }
+		public GameTime()
+		{
+			// not sure why the * 100
+			_ticksInSixtiethOfASecond = TimeSpan.TicksPerSecond / 60.0f * 100 ;
+			_stopwatch = new Stopwatch();
+		}
 
-        public void Step()
-        {
-            _elapsedTicks = _stopwatch.ElapsedTicks - _lastTick;
-            _elapsedMilliseconds = _stopwatch.ElapsedMilliseconds - _lastMilliseconds;
+		public void Start()
+		{
+			_stopwatch.Reset();
+			_stopwatch.Start();
 
-            _lastTick = _stopwatch.ElapsedTicks;
-            _lastMilliseconds = _stopwatch.ElapsedMilliseconds;
-        }
+			_lastTick = _stopwatch.ElapsedTicks;
+		}
 
-        /// <summary>
-        /// total time elapsed since the beginning of the game, in ticks
-        /// </summary>
-        public long TotalTicks => _stopwatch.ElapsedTicks;
+		public int Step()
+		{
+			_elapsedTicks = _stopwatch.ElapsedTicks - _lastTick;
 
-        /// <summary>
-        /// total time elapsed since the beginning of the game, in milliseconds
-        /// </summary>
-        public long TotalMilliseconds => _stopwatch.ElapsedMilliseconds;
+			_lastTick = _stopwatch.ElapsedTicks;
 
-        /// <summary>
-        /// time elapsed since last frame, in ticks
-        /// </summary>
-        public long ElapsedTicks => _elapsedTicks;
+			var frameMultiple = _elapsedTicks / _ticksInSixtiethOfASecond;
+			int instructions = (int)(frameMultiple * InstructionsPerFrame);
 
-        /// <summary>
-        /// time elapsed since last frame, in milliseconds
-        /// </summary>
-        public long ElapsedMilliseconds => _elapsedMilliseconds;
-    }
+			return Math.Min(instructions, _maxInstructionsPerFrame);
+		}
+
+		/// <summary>
+		/// total time elapsed since the beginning of the game, in ticks
+		/// </summary>
+		public long TotalTicks => _stopwatch.ElapsedTicks;
+
+		/// <summary>
+		/// time elapsed since last frame, in ticks
+		/// </summary>
+		public long ElapsedTicks => _elapsedTicks;
+
+	}
 }

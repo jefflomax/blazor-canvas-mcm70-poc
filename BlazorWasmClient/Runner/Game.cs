@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BlazorWasmClient.Emulator;
 using BlazorWasmClient.Emulator.Impl;
 using MCMShared.Emulator;
@@ -28,12 +25,9 @@ namespace BlazorWasmClient.Runner
 		private PrinterMouse _printerMouse;
 		private TapesWasm _tapes;
 
+		// See GameTime.cs
 		// In order to compute 0.7 / iota 255 in 50 seconds,
 		// we need to execute around 65000 instructions per second
-		private static readonly int InstructionsPerFrame = 1090; // Until we have timing
-
-		private int _instructionCounter = 0;
-		private int _lastInstructionCounter = 0;
 
 		public bool PrinterRedisplay
 		{
@@ -81,7 +75,6 @@ namespace BlazorWasmClient.Runner
 			_keyboard = null;
 			_display = null;
 			_printer = null;
-			_instructionCounter = 0;
 		}
 
 		public bool IsInitialized => _isInitialized;
@@ -159,16 +152,6 @@ namespace BlazorWasmClient.Runner
 			await Task.CompletedTask;
 		}
 
-		//private long minMilliseconds = long.MaxValue;
-		//private long maxMilliseconds = long.MinValue;
-		//private long minTicks = long.MaxValue;
-		//private long maxTicks = long.MinValue;
-
-		//private static int fps = 30;
-		//private long now;
-		private long then;
-		//private float interval = 1000/fps;
-		//private long delta;
 		private bool displayedDuringStep;
 		public async ValueTask<int> Step()
 		{
@@ -176,34 +159,17 @@ namespace BlazorWasmClient.Runner
 			if (!_isInitialized)
 			{
 				GameTime.Start();
-				then = GameTime.TotalMilliseconds;
 
 				_isInitialized = true;
 			}
 			displayedDuringStep = false;
 
-			GameTime.Step();
-
-#if false
-			if (GameTime.ElapsedTicks < minTicks)
-				minTicks = GameTime.ElapsedTicks;
-			if (GameTime.ElapsedTicks > maxTicks)
-				maxTicks = GameTime.ElapsedTicks;
-
-			if (GameTime.ElapsedMilliseconds < minMilliseconds)
-				minMilliseconds = GameTime.ElapsedMilliseconds;
-			if (GameTime.ElapsedMilliseconds > maxMilliseconds)
-				maxMilliseconds = GameTime.ElapsedMilliseconds;
-#endif
+			var instructionsPerFrame = GameTime.Step();
 
 			if (_printer.pr_op_code == 0) // Printer animation, skip CPU entirely
 			{
 				// https://stackoverflow.com/questions/32656443/timing-in-requestanimationframe
-				// Intel 8008 clock speed 500Mhz
-				// 500,000,000 cycles per second
-				// 1ms = 1 / 1000 of a second
-				//var instructions = Math.Min(1, GameTime.ElapsedMilliseconds);
-				for(int i = 0; i< InstructionsPerFrame; i++)
+				for(int i = 0; i< instructionsPerFrame; i++)
 				{
 					// RefreshDisplayCounter incremented on every write to the display
 					if (_machine.RefreshDisplayCounter >= 56 || _machine.InstrCount >= 1000)
@@ -221,7 +187,7 @@ namespace BlazorWasmClient.Runner
 					}
 
 					_cpu.RunCpu(); // Process one instruction
-					_instructionCounter++;
+
 					if (_machine.RefreshDisplayCounter != 0)
 					{
 						_machine.InstrCount++;
@@ -264,19 +230,8 @@ namespace BlazorWasmClient.Runner
 
 			}
 
-#if false
-			if(_instructionCounter - _lastInstructionCounter > 3000000)
-			{
-				_lastInstructionCounter = _instructionCounter;
-				float totalSeconds = ((GameTime.TotalMilliseconds - then)/1000);
-				float ips = _instructionCounter / totalSeconds;
-				_appState.SetInstructionsPerSecond((int)ips);
-			}
-#endif
-
-			return (_instructionCounter > int.MaxValue-(InstructionsPerFrame*10))
-				? -1 // TODO: Signal emulator stop
-				: _instructionCounter;
+			// Return -1 to have Javascript stop running
+			return 0;
 		}
 
 		public void Key(byte key, JsKey systemKey)
@@ -322,7 +277,7 @@ namespace BlazorWasmClient.Runner
 			);
 		}
 
-		public GameTime GameTime { get; } = new();
+		public GameTime GameTime { get; } = new GameTime();
 
 	}
 }

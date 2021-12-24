@@ -107,9 +107,6 @@ namespace Mcm70JSInterop {
 			const imgId: string = this.monoBinding.conv_string(sourceId);
 			const elementRef = document.getElementById(imgId) as CanvasImageSource;
 
-			//const canvasElement = document.getElementById("emulator") as HTMLCanvasElement;
-			//const context = canvasElement.getContext('2d');
-			//context.drawImage(elementRef, dx, dy);
 			this.drawImage(elementRef, "emulator", dx, dy);
 			return 0;
 		}

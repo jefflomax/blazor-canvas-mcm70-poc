@@ -14,6 +14,7 @@ namespace BlazorWasmClient.Emulator.Impl
 		public void Clear()
 		{
 			_keyCode = JSKeyCode.None;
+			_ctrl = false;
 		}
 
 		public void Set(string code, bool ctrl)
