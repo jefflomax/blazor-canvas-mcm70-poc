@@ -1,7 +1,9 @@
 # blazor-canvas-mcm70-poc
 
-Proof of Concept for using unmarshalled javascript calls to manipulate the bitmap of a canvas.
+This is a port of the [York University](http://www.cse.yorku.ca/museum/collections/MCM/MCM.htm) MCM/70 emulator by Zbigniew Stachniak.  
 
-While the .NET/WASM => JS unmarshalled interop works fine, there is no way to pass the JavaScript sourced UInt8ClampedArray by reference unmarshalled to .NET:
+The original C source is now C# running on .NET Core 5 using OpenTK, and also running in Web Assembly via Blazor.
 
-https://github.com/dotnet/aspnetcore/issues/26287
+The Blazor version is at https://blazorcanvas20210704221924.azurewebsites.net/
+
+Blazor Proof of Concept uses unmarshalled javascript calls to manipulate the bitmap of a canvas.

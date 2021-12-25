@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MCM70Client": {
+      "commandName": "Project",
+      "commandLineArgs": "blink"
+    }
+  }
+}
