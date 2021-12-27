@@ -259,6 +259,11 @@ namespace BlazorWasmClient.Runner
 			);
 		}
 
+		public bool IsKeyboardClick(int x, int y, out byte ch)
+		{
+			return _machine.EmulatorMouse.IsKeyboardClick(x, y, out ch);
+		}
+
 		public void PrinterClick
 		(
 			bool isLeftButton,

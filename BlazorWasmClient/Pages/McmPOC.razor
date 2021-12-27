@@ -407,6 +407,11 @@ Check for IOS keyboard
 		}
 	}
 
+	private void MapKey(byte b)
+	{
+		_game.Key(b, _systemKey);
+	}
+
 	private static Dictionary<string, int> KeyValues = null;
 
 	private void EmulatorCanvasOnClick(MouseEventArgs me)
@@ -421,6 +426,15 @@ Check for IOS keyboard
 				: (me.Button == 2)
 					? MouseButtonSel.Right
 					: MouseButtonSel.Unknown;
+
+
+			var x = (int)me.OffsetX;
+			var y = (int)me.OffsetY;
+			if( _game.IsKeyboardClick(x,y, out var ch ))
+			{
+				MapKey(ch);
+				return;
+			}
 
 			var action = _game.EmulatorClick
 			(

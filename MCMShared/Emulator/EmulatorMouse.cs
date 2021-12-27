@@ -222,6 +222,116 @@ namespace MCMShared.Emulator
 			return MouseAction.None;
 		}
 
+		private const int keyboardTop = 427;
+		private const int keyRow1Left = 58;
+		private const int keyRow1Bottom = 481;
+		private const int keyRow2QLeft = 80;
+		private const int keyRow2RBRight = 786;
+		private const int keyRow2Top = 484;
+		private const int keyRow2Bottom = 538;
+		private const int keyRow3ALeft = 112;
+		private const int keyRow3APOSRight = 817;
+		private const int keyRow3Top = 541;
+		private const int keyRow3Bottom = 596;
+		private const int keyRow4Top = 598;
+		private const int keyRow4ZLeft = 146;
+		private const int keyRowSlashRight = 786;
+		private const int keyboardBottom = 655;
+
+		private const int keyWidth = 122 - 58;
+		private const int keyHeight = 482 - keyboardTop;
+		private const int keyHalfHeight = keyHeight >> 1;
+		public bool IsKeyboardClick(int x, int y, out byte ch)
+		{
+			ch = 0;
+			if (y < keyboardTop || y > keyboardBottom)
+			{
+				return false;
+			}
+			if (x < 3 || x > 910)
+			{
+				return false;
+			}
+
+			if (y < keyRow1Bottom) // 1..Backspace
+			{
+				if (x < keyRow1Left || x > 912)
+				{
+					return false;
+				}
+				var column = (x - keyRow1Left) / keyWidth;
+				var row = (y-keyboardTop) > keyHalfHeight;
+				if (row)
+				{
+					ch = ByteOf("1234567890-=\b", column);
+				}
+				else
+				{
+					ch = ByteOf("!@#$%^&*()_+\b", column);
+				}
+			}
+			else if (y < keyRow2Bottom)
+			{
+				// special case for START, |\
+				if (x < keyRow2QLeft || x > keyRow2RBRight)
+				{
+					return false;
+				}
+				var column = (x - keyRow3ALeft) / keyWidth;
+				var row = (y-keyRow2Top) > keyHalfHeight;
+				if (row)
+				{
+					ch = ByteOf("qwertyuiop[", column);
+				}
+				else
+				{
+					ch = ByteOf("QWERTYUIOP{", column);
+				}
+			}
+			else if (y < keyRow3Bottom)
+			{
+				if (x < keyRow3ALeft || x > keyRow3APOSRight)
+				{
+					return false;
+				}
+				var column = (x - keyRow3ALeft) / keyWidth;
+				var row = (y-keyRow3Top) > keyHalfHeight;
+				if (row)
+				{
+					ch = ByteOf("asdfghjkl;'", column);
+				}
+				else
+				{
+					ch = ByteOf("ASDFGHJKL:\"", column);
+				}
+			}
+			else
+			{
+				if (x < keyRow4ZLeft || x > keyRowSlashRight)
+				{
+					return false;
+				}
+				var column = (x - keyRow4ZLeft) / keyWidth;
+				var row = (y-keyRow4Top) > keyHalfHeight;
+				if (row)
+				{
+					ch = ByteOf("zxcvbnm,./", column);
+				}
+				else
+				{
+					ch = ByteOf("ZXCVBNM<>?", column);
+				}
+			}
+
+			return true;
+		}
+
+		private static byte ByteOf(string asciiKeys, int index)
+		{
+			return (byte)asciiKeys[index];
+		}
+
+
 		protected virtual bool ReturnForShiftClick
 		(
 			TP tape_s,
