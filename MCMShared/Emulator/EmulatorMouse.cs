@@ -227,6 +227,7 @@ namespace MCMShared.Emulator
 		private const int keyRow1Bottom = 481;
 		private const int keyRow2QLeft = 80;
 		private const int keyRow2RBRight = 786;
+		private const int keyRow2ReturnRight = 885;
 		private const int keyRow2Top = 484;
 		private const int keyRow2Bottom = 538;
 		private const int keyRow3ALeft = 112;
@@ -244,24 +245,24 @@ namespace MCMShared.Emulator
 		public bool IsKeyboardClick(int x, int y, out byte ch)
 		{
 			ch = 0;
-			if (y < keyboardTop || y > keyboardBottom)
+			if( y < keyboardTop || y > keyboardBottom )
 			{
 				return false;
 			}
-			if (x < 3 || x > 910)
+			if( x < 3 || x > 910 )
 			{
 				return false;
 			}
 
-			if (y < keyRow1Bottom) // 1..Backspace
+			if( y < keyRow1Bottom ) // 1..Backspace
 			{
-				if (x < keyRow1Left || x > 912)
+				if( x < keyRow1Left || x > 912 )
 				{
 					return false;
 				}
 				var column = (x - keyRow1Left) / keyWidth;
 				var row = (y-keyboardTop) > keyHalfHeight;
-				if (row)
+				if( row )
 				{
 					ch = ByteOf("1234567890-=\b", column);
 				}
@@ -270,16 +271,21 @@ namespace MCMShared.Emulator
 					ch = ByteOf("!@#$%^&*()_+\b", column);
 				}
 			}
-			else if (y < keyRow2Bottom)
+			else if( y < keyRow2Bottom )
 			{
 				// special case for START, |\
-				if (x < keyRow2QLeft || x > keyRow2RBRight)
+				if( x < keyRow2QLeft || x > keyRow2ReturnRight )
 				{
 					return false;
 				}
+				if( x > keyRow2RBRight )
+				{
+					ch = 13;
+					return true;
+				}
 				var column = (x - keyRow3ALeft) / keyWidth;
 				var row = (y-keyRow2Top) > keyHalfHeight;
-				if (row)
+				if( row )
 				{
 					ch = ByteOf("qwertyuiop[", column);
 				}
@@ -288,15 +294,20 @@ namespace MCMShared.Emulator
 					ch = ByteOf("QWERTYUIOP{", column);
 				}
 			}
-			else if (y < keyRow3Bottom)
+			else if( y < keyRow3Bottom )
 			{
-				if (x < keyRow3ALeft || x > keyRow3APOSRight)
+				if( x < keyRow3ALeft || x > keyRow2ReturnRight )
 				{
 					return false;
 				}
+				if( x > keyRow3APOSRight )
+				{
+					ch = 13;
+					return true;
+				}
 				var column = (x - keyRow3ALeft) / keyWidth;
 				var row = (y-keyRow3Top) > keyHalfHeight;
-				if (row)
+				if( row )
 				{
 					ch = ByteOf("asdfghjkl;'", column);
 				}
@@ -307,13 +318,13 @@ namespace MCMShared.Emulator
 			}
 			else
 			{
-				if (x < keyRow4ZLeft || x > keyRowSlashRight)
+				if( x < keyRow4ZLeft || x > keyRowSlashRight )
 				{
 					return false;
 				}
 				var column = (x - keyRow4ZLeft) / keyWidth;
 				var row = (y-keyRow4Top) > keyHalfHeight;
-				if (row)
+				if( row )
 				{
 					ch = ByteOf("zxcvbnm,./", column);
 				}
