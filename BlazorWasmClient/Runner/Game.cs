@@ -247,15 +247,15 @@ namespace BlazorWasmClient.Runner
 			double y
 		)
 		{
-			var fx = (float)x;
-			var fy = (float)y;
+			var ix = (int)x;
+			var iy = (int)y;
 			return _machine.EmulatorMouse.MouseClick
 			(
 				mb,
 				isPressed:true,
 				isShift,
-				fx,
-				fy
+				ix,
+				iy
 			);
 		}
 

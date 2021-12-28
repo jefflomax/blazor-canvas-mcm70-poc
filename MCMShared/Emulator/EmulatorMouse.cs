@@ -69,12 +69,10 @@ namespace MCMShared.Emulator
 			MouseButtonSel button,
 			bool isPressed,
 			bool isShifted,
-			float fx,
-			float fy
+			int x,
+			int y
 		)
 		{
-			var x = (int) fx;
-			var y = (int) fy;
 			MouseAction mouseAction;
 			_lastMouseX = x;
 			_lastMouseY = y;
@@ -237,7 +235,10 @@ namespace MCMShared.Emulator
 		private const int keyRow4Top = 598;
 		private const int keyRow4ZLeft = 146;
 		private const int keyRowSlashRight = 786;
-		private const int keyboardBottom = 655;
+		private const int keyRow4Bottom = 650;
+		private const int keyRowSpaceBarLeft = 177;
+		private const int keyRowSpaceBarRight = 755;
+		private const int keyboardBottom = 708;//655;
 
 		private const int keyWidth = 122 - 58;
 		private const int keyHeight = 482 - keyboardTop;
@@ -316,7 +317,7 @@ namespace MCMShared.Emulator
 					ch = ByteOf("ASDFGHJKL:\"", column);
 				}
 			}
-			else
+			else if ( y < keyRow4Bottom )
 			{
 				if( x < keyRow4ZLeft || x > keyRowSlashRight )
 				{
@@ -332,6 +333,14 @@ namespace MCMShared.Emulator
 				{
 					ch = ByteOf("ZXCVBNM<>?", column);
 				}
+			}
+			else
+			{
+				if( x < keyRowSpaceBarLeft || x > keyRowSpaceBarRight )
+				{
+					return false;
+				}
+				ch = 32;
 			}
 
 			return true;

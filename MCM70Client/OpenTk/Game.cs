@@ -129,21 +129,28 @@ namespace MCM70Client.OpenTk
 
 		protected override void OnMouseUp(MouseButtonEventArgs e)
 		{
-			var scaledX = _mouseX * ((float)_width / (float)Size.X);
-			var scaledY = _mouseY * ((float)_height / (float)Size.Y);
+			var scaledX = (int)(_mouseX * ((float)_width / (float)Size.X));
+			var scaledY = (int)(_mouseY * ((float)_height / (float)Size.Y));
 
-			var action = _machine.EmulatorMouse.MouseClick
-			(
-				ButtonType(e.Button),
-				e.Action == InputAction.Release,
-				(e.Modifiers & KeyModifiers.Shift) != 0,
-				scaledX,
-				scaledY
-			);
-
-			if (action == MouseAction.PrinterOn || action == MouseAction.PrinterOff)
+			if( _machine.EmulatorMouse.IsKeyboardClick(scaledX, scaledY, out var ch))
 			{
-				_togglePrinterWindow();
+				_keyboard.keyboard(ch, _openGLKey);
+			}
+			else
+			{
+				var action = _machine.EmulatorMouse.MouseClick
+				(
+					ButtonType(e.Button),
+					e.Action == InputAction.Release,
+					(e.Modifiers & KeyModifiers.Shift) != 0,
+					scaledX,
+					scaledY
+				);
+
+				if( action == MouseAction.PrinterOn || action == MouseAction.PrinterOff )
+				{
+					_togglePrinterWindow();
+				}
 			}
 
 			base.OnMouseUp(e);
