@@ -25,21 +25,6 @@
 	@bind-value:event="oninput"
 	@ref="_iosInput"/>
 
-<div style="margin:10px;" hidden="@hideStartButton">
-<button
-	id="startit"
-	type="button"
-	title="Start"
-	hidden="@hideStartButton"
-	@onclick="StartEmulator">Start Emulator</button>
-Check for IOS keyboard
-<input
-	id="iosCheckBox"
-	type="checkbox"
-	hidden="@hideStartButton"
-	@bind="@IosCheckBoxEnabled"
-	@ref="_iosCheckBox"/>
-</div>
 
 @* Tried BECanvas, but it is well out of date and provided no real value *@
 @* To get the keydown event, need tabindex 0 and focus *@
@@ -48,12 +33,32 @@ Check for IOS keyboard
 	width="@EmulatorWidth"
 	height="@EmulatorHeight"
 	tabindex="0"
+	style="z-index:1"
 	@onkeydown="CanvasOnKeypress"
 	@onkeydown:preventDefault
 	@onclick="EmulatorCanvasOnClick"
 	@onclick:preventDefault
 	@ref="_emulatorCanvasRef"></canvas>
 </div>
+<div style="margin:10px;z-index:1;position:relative;top:-656px" hidden="@hideStartButton">
+<button
+	id="startit"
+	type="button"
+	title="Start"
+	hidden="@hideStartButton"
+	@onclick="StartEmulator">Start Emulator</button>
+<span style="color:white">Check for IOS keyboard</span>
+<input
+	id="iosCheckBox"
+	type="checkbox"
+	hidden="@hideStartButton"
+	@bind="@IosCheckBoxEnabled"
+	@ref="_iosCheckBox"/>
+<span style="color:white">(TAB "Start" starts MCM/70, next RETURN when you see MCM/APL)</span>
+</div>
+
+
+
 <SelectTape
 	Display="@showTapeSelector"
 	Tapes="@Tapes"
