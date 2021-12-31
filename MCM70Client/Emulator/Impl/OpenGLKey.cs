@@ -17,30 +17,28 @@ namespace MCM70Client.Emulator.Impl
 			//_keyCode = null;
 		}
 
+		public void Set(byte b)
+		{
+			static KeyboardKeyEventArgs Key(Keys k, int scanCode)
+			{
+				return new KeyboardKeyEventArgs(k, scanCode, modifiers: 0, isRepeat: false);
+			}
+			switch (b)
+			{
+				case (byte)' ':
+					_keyCode = Key(Keys.Space,0);
+					break;
+				case (byte)'\t':
+					_keyCode = Key(Keys.Tab,15);
+					break;
+				case (byte)'\b':
+					_keyCode = Key(Keys.Backspace,0);
+					break;
+			}
+		}
 		public void Set(KeyboardKeyEventArgs ke)
 		{
 			_keyCode = ke;
-#if false
-			_ctrl = ctrl;
-			switch (code)
-			{
-				case "Space":
-					_keyCode = JSKeyCode.Space;
-					break;
-				case "Backspace":
-					_keyCode = JSKeyCode.BackSpace;
-					break;
-				case "F1":
-					_keyCode = JSKeyCode.F1;
-					break;
-				case "F2":
-					_keyCode = JSKeyCode.F2;
-					break;
-				case "Tab":
-					_keyCode = JSKeyCode.TAB;
-					break;
-			}
-#endif
 		}
 
 		public bool IsF1()

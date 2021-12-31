@@ -409,7 +409,9 @@ Check for IOS keyboard
 
 	private void MapKey(byte b)
 	{
+		_systemKey.Set(b);
 		_game.Key(b, _systemKey);
+		_systemKey.Clear();
 	}
 
 	private static Dictionary<string, int> KeyValues = null;

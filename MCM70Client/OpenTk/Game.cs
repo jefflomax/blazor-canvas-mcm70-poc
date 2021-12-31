@@ -134,6 +134,7 @@ namespace MCM70Client.OpenTk
 
 			if( _machine.EmulatorMouse.IsKeyboardClick(scaledX, scaledY, out var ch))
 			{
+				_openGLKey.Set( ch );
 				_keyboard.keyboard(ch, _openGLKey);
 			}
 			else

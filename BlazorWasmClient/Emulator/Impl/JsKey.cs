@@ -17,10 +17,26 @@ namespace BlazorWasmClient.Emulator.Impl
 			_ctrl = false;
 		}
 
+		public void Set(byte b)
+		{
+			_ctrl = false;
+			switch( b )
+			{
+				case (byte)' ':
+					_keyCode = JSKeyCode.Space;
+					break;
+				case (byte)'\t':
+					_keyCode = JSKeyCode.TAB;
+					break;
+				case (byte)'\b':
+					_keyCode =JSKeyCode.BackSpace;
+					break;
+			}
+		}
 		public void Set(string code, bool ctrl)
 		{
 			_ctrl = ctrl;
-			switch (code)
+			switch( code )
 			{
 				case "Space":
 					_keyCode = JSKeyCode.Space;

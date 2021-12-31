@@ -220,17 +220,19 @@ namespace MCMShared.Emulator
 			return MouseAction.None;
 		}
 
-		private const int keyboardTop = 427;
+		private const int keyboardTop = 426;
 		private const int keyRow1Left = 58;
 		private const int keyRow1Bottom = 481;
+		private const int keyRow2StartLeft = 8;
+		private const int keyRow2StartRight = 78;
 		private const int keyRow2QLeft = 80;
 		private const int keyRow2RBRight = 786;
 		private const int keyRow2ReturnRight = 885;
-		private const int keyRow2Top = 484;
+		private const int keyRow2Top = 482;
 		private const int keyRow2Bottom = 538;
 		private const int keyRow3ALeft = 112;
 		private const int keyRow3APOSRight = 817;
-		private const int keyRow3Top = 541;
+		private const int keyRow3Top = 540;
 		private const int keyRow3Bottom = 596;
 		private const int keyRow4Top = 598;
 		private const int keyRow4ZLeft = 146;
@@ -238,7 +240,7 @@ namespace MCMShared.Emulator
 		private const int keyRow4Bottom = 650;
 		private const int keyRowSpaceBarLeft = 177;
 		private const int keyRowSpaceBarRight = 755;
-		private const int keyboardBottom = 708;//655;
+		private const int keyboardBottom = 708;
 
 		private const int keyWidth = 122 - 58;
 		private const int keyHeight = 482 - keyboardTop;
@@ -272,9 +274,15 @@ namespace MCMShared.Emulator
 					ch = ByteOf("!@#$%^&*()_+\b", column);
 				}
 			}
-			else if( y < keyRow2Bottom )
+			else if( y < keyRow2Bottom ) // Start. Q..\
 			{
 				// special case for START, |\
+				if( x >= keyRow2StartLeft && x < keyRow2StartRight)
+				{
+					ch = (byte)'\t';
+					return true;
+				}
+
 				if( x < keyRow2QLeft || x > keyRow2ReturnRight )
 				{
 					return false;
